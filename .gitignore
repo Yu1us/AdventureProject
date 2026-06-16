@@ -361,3 +361,30 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# =========================
+# Unreal Engine 5
+# =========================
+# Precompiled binaries (editor + game)
+Binaries/
+Plugins/**/Binaries/
+
+# Intermediate build artifacts (UHT, build rules, project files)
+Intermediate/
+Plugins/**/Intermediate/
+
+# Derived Data Cache (per-machine asset cache)
+DerivedDataCache/
+
+# Saved (autosaves, logs, config backups, crash reports)
+Saved/
+
+# Build output
+Build/
+
+# VS config
+.vsconfig
+
+# Unreal Engine local user settings
+*.VC.db
+*.VC.opendb
