@@ -14,7 +14,6 @@ APickupBase::APickupBase()
 	// Create this pickup's mesh component
 	PickupMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMesh"));
 	check(PickupMeshComponent != nullptr);
-
 	// Make the mesh the root component     
 	SetRootComponent(PickupMeshComponent);
 
@@ -30,7 +29,6 @@ APickupBase::APickupBase()
 
 	// Configure the sphere to actually generate overlap events
 	SphereComponent->SetGenerateOverlapEvents(true);
-
 	// Enable collision    
 	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
@@ -71,7 +69,6 @@ void APickupBase::InitializePickup()
 {
 	// Only initialize if the pickup has valid inputs 
 	const FSoftObjectPath TablePath = PickupDataTable.ToSoftObjectPath();
-
 	if (!TablePath.IsNull() && !PickupItemID.IsNone())
 	{
 		/* Resolve the table soft reference into a usable data table.
@@ -123,6 +120,11 @@ void APickupBase::InitializePickup()
 			// Set the pickup's mesh
 			PickupMeshComponent->SetStaticMesh(LoadedMesh);
 		}
+
+		// Restore visibility after respawning
+		PickupMeshComponent->SetVisibility(true);
+		// Restore collision after respawning 
+		SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	}
 }
 
@@ -135,6 +137,7 @@ void APickupBase::InitializePickup()
 *	@param bFromSweep - whether the overlap was generated from a sweep.
 *	@param SweepResult - contains info about the overlap such as surface normals and faces.
 */
+// Sets the pickup to invisible and uninteractable, and respawns it after a set time.
 void APickupBase::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Attempting a pickup collision"));
@@ -148,4 +151,31 @@ void APickupBase::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 		PickupMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
+
+	// If the pickup should respawn, wait an fRespawnTime amount of seconds before calling InitializePickup() to respawn it
+	if (bShouldRespawn)
+	{
+		GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &APickupBase::InitializePickup, RespawnTime, false);
+	}
+}
+
+/*	Updates this pickup whenever a property is changed.
+*	@param PropertyChangedEvent - contains info about the property that was changed. */
+void APickupBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	// Handle parent class property changes
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	// If a property was changed, get the name of the changed property. Otherwise use none.
+	const FName ChangedPropertyName = PropertyChangedEvent.Property
+		? PropertyChangedEvent.Property->GetFName()
+		: NAME_None;
+
+	// Verify that the changed property is one that affects item lookup in this class
+	if (ChangedPropertyName == GET_MEMBER_NAME_CHECKED(APickupBase, PickupItemID) ||
+		ChangedPropertyName == GET_MEMBER_NAME_CHECKED(APickupBase, PickupDataTable))
+	{
+		InitializePickup();
+	}
+
 }
