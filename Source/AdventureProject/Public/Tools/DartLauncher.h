@@ -17,4 +17,8 @@ public:
 
 	virtual void BindInputAction(const UInputAction* InputToBind) override;
 
+	// Projectile class to spawn
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	TSubclassOf<AFirstPersonProjectile> ProjectileClass;
+
 };

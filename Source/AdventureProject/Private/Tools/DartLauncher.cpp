@@ -2,11 +2,34 @@
 
 
 #include "Tools/DartLauncher.h"
+#include "FirstPersonProjectile.h"  
+#include "Kismet/KismetMathLibrary.h"
+#include "EnhancedInputComponent.h" 
 #include "AdventureCharacter.h"
 
 void ADartLauncher::Use()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Using the dart launcher!"));
+
+	UWorld* const World = GetWorld();
+	if (World != nullptr && ProjectileClass != nullptr)
+	{
+		FVector TargetPosition = OwningCharacter->GetCameraTargetLocation();
+
+		// Get the correct socket to spawn the projectile from
+		FVector SocketLocation = ToolMeshComponent->GetSocketLocation("Muzzle");
+		// Get projectile's rotation as it spawns so we know in what direction to apply an offset 
+		FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(SocketLocation, TargetPosition);
+		FVector SpawnLocation = SocketLocation + UKismetMathLibrary::GetForwardVector(SpawnRotation) * 10.0;
+
+		//Set Spawn Collision Handling Override
+		FActorSpawnParameters ActorSpawnParams;
+		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+		// Spawn the projectile at the muzzle
+		World->SpawnActor<AFirstPersonProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+
+	}
 }
 
 void ADartLauncher::BindInputAction(const UInputAction* InputToBind)
