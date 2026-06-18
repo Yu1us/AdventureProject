@@ -222,3 +222,29 @@ void AAdventureCharacter::GiveItem(UItemDefinition* ItemDefinition)
 		break;
 	}
 }
+
+FVector AAdventureCharacter::GetCameraTargetLocation()
+{
+	// The target position to return
+	FVector TargetPosition;
+
+	UWorld* const World = GetWorld();
+
+	if (World != nullptr)
+	{
+		// The result of the line trace
+		FHitResult Hit;
+
+		// Simulate a line trace from the character along the vector they're looking down
+		const FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
+		const FVector TraceEnd = TraceStart + FirstPersonCameraComponent->GetForwardVector() * 10000.0;
+
+		// Simulate a line trace and save result in Hit
+		World->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility);
+
+		// If the trace made a blocking hit, use the impact point as the target. Otherwise, use the end point of the trace.
+		TargetPosition = Hit.bBlockingHit ? Hit.ImpactPoint : Hit.TraceEnd;
+	}
+
+	return TargetPosition;
+}

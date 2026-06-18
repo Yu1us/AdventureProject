@@ -32,6 +32,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = Animation)
 	TObjectPtr<UAnimBlueprint> FirstPersonDefaultAnim;
 
+	// Returns the location in the world the character is looking at
+	UFUNCTION()
+	FVector GetCameraTargetLocation();
+
 
 protected:
 	// Called when the game starts or when spawned
