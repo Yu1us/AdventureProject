@@ -67,6 +67,17 @@ void AFirstPersonProjectile::Tick(float DeltaTime)
 
 void AFirstPersonProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	// If we hit the ground (mostly-up surface normal), lay the dart flat.
+	if (FVector::DotProduct(Hit.ImpactNormal, FVector::UpVector) > 0.7f)
+	{
+		FRotator Flat = GetActorRotation();
+		Flat.Pitch = 0.f;
+		Flat.Roll = 0.f;
+		SetActorRotation(Flat);
+
+		return;
+	}
+
 	// Only add impulse and destroy projectile if we hit a physics object
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
 	{
