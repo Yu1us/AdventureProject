@@ -27,4 +27,7 @@ public:
 	// The Static Mesh used to display this item in the world.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Data")
 	TSoftObjectPtr<UStaticMesh> WorldMesh;
+
+	// Creates and returns a copy of the item.
+	virtual UItemDefinition* CreateItemCopy(UObject* Outer) const;
 };

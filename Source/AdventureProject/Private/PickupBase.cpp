@@ -101,12 +101,8 @@ void APickupBase::InitializePickup()
 			return;
 		}
 
-		// Build a runtime ItemDefinition object from the data table row     
-		ReferenceItem = NewObject<UItemDefinition>(this);
-		ReferenceItem->ID = ItemDataRow->ID;
-		ReferenceItem->ItemType = ItemDataRow->ItemType;
-		ReferenceItem->ItemText = ItemDataRow->ItemText;
-		ReferenceItem->WorldMesh = TempItemDefinition->WorldMesh;
+		// Create a copy of the item with this class as the owner
+		ReferenceItem = TempItemDefinition->CreateItemCopy(this);
 
 		// Resolve the item's world mesh from the item definition.
 		// This uses the mesh if it¡¯s already in memory, or loads it if it isn¡¯t.
