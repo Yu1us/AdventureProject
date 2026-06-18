@@ -6,6 +6,8 @@
 #include "EquippableToolBase.h"
 #include "DartLauncher.generated.h"
 
+class AFirstPersonProjectile;
+
 UCLASS(BlueprintType, Blueprintable)
 class ADVENTUREPROJECT_API ADartLauncher : public AEquippableToolBase
 {
