@@ -142,6 +142,9 @@ void APickupBase::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 	AAdventureCharacter* Character = Cast<AAdventureCharacter>(OtherActor);
 	if (Character != nullptr)
 	{
+		// Give the item to the character
+		Character->GiveItem(ReferenceItem);
+
 		// Set this pickup to be invisible and disable collision
 		PickupMeshComponent->SetVisibility(false);
 		PickupMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);

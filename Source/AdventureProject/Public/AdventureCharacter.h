@@ -14,6 +14,10 @@ class UAnimBlueprint;
 class UInputMappingContext;
 class UInputAction;
 class UInputComponent;
+class UItemDefinition;
+class AEquippableToolBase;
+class UEquippableToolDefinition;
+class UInventoryComponent;
 
 UCLASS()
 class ADVENTUREPROJECT_API AAdventureCharacter : public ACharacter
@@ -48,6 +52,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> LookAction;
 
+	// The currently-equipped tool
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Tools")
+	TObjectPtr<AEquippableToolBase> EquippedTool;
+
+	// Use Input Actions
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> UseAction;
 
 public:	
 	// Called every frame
@@ -83,4 +94,20 @@ public:
 	// First-person mesh, visible only to the owning player
 	UPROPERTY(VisibleAnywhere, Category = Mesh)
 	TObjectPtr<USkeletalMeshComponent> FirstPersonMeshComponent;
+
+	// Inventory Component
+	UPROPERTY(VisibleAnywhere, Category = "Inventory")
+	TObjectPtr<UInventoryComponent> InventoryComponent;
+
+	// Returns whether or not the player already owns this tool
+	UFUNCTION()
+	bool IsToolAlreadyOwned(UEquippableToolDefinition* ToolDefinition);
+
+	// Attaches and equips a tool to the player
+	UFUNCTION()
+	void AttachTool(UEquippableToolDefinition* ToolDefinition);
+
+	// Public function that other classes can call to attempt to give an item to the player
+	UFUNCTION()
+	void GiveItem(UItemDefinition* ItemDefinition);
 };
