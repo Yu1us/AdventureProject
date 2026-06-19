@@ -19,6 +19,8 @@ public:
 
 	virtual void BindInputAction(const UInputAction* InputToBind) override;
 
+	bool ShouldRequestServerUse() const;
+
 	// Projectile class to spawn
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	TSubclassOf<AFirstPersonProjectile> ProjectileClass;

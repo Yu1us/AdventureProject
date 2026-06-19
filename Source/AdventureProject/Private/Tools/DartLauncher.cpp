@@ -11,6 +11,17 @@ void ADartLauncher::Use()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Using the dart launcher!"));
 
+	if (OwningCharacter == nullptr)
+	{
+		return;
+	}
+
+	if (ShouldRequestServerUse())
+	{
+		OwningCharacter->ServerUseEquippedTool();
+		return;
+	}
+
 	UWorld* const World = GetWorld();
 	if (World != nullptr && ProjectileClass != nullptr)
 	{
@@ -24,12 +35,19 @@ void ADartLauncher::Use()
 
 		//Set Spawn Collision Handling Override
 		FActorSpawnParameters ActorSpawnParams;
+		ActorSpawnParams.Owner = OwningCharacter;
+		ActorSpawnParams.Instigator = OwningCharacter;
 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 		// Spawn the projectile at the muzzle
 		World->SpawnActor<AFirstPersonProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 
 	}
+}
+
+bool ADartLauncher::ShouldRequestServerUse() const
+{
+	return OwningCharacter != nullptr && !OwningCharacter->HasAuthority();
 }
 
 void ADartLauncher::BindInputAction(const UInputAction* InputToBind)

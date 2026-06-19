@@ -10,6 +10,8 @@ AFirstPersonProjectile::AFirstPersonProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
+	SetReplicateMovement(true);
 
 	// Use a simple sphere as the collision representation
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
@@ -67,6 +69,11 @@ void AFirstPersonProjectile::Tick(float DeltaTime)
 
 void AFirstPersonProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
+
 	// If we hit the ground (mostly-up surface normal), lay the dart flat.
 	if (FVector::DotProduct(Hit.ImpactNormal, FVector::UpVector) > 0.7f)
 	{

@@ -194,6 +194,14 @@ void AAdventureCharacter::AttachTool(UEquippableToolDefinition* ToolDefinition)
 	}
 }
 
+void AAdventureCharacter::ServerUseEquippedTool_Implementation()
+{
+	if (EquippedTool != nullptr)
+	{
+		EquippedTool->Use();
+	}
+}
+
 void AAdventureCharacter::GiveItem(UItemDefinition* ItemDefinition)
 {
 	// Case based on the type of the item

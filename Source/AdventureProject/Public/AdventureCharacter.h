@@ -111,6 +111,10 @@ public:
 	UFUNCTION()
 	void AttachTool(UEquippableToolDefinition* ToolDefinition);
 
+	// Requests the server to use the currently-equipped tool.
+	UFUNCTION(Server, Reliable)
+	void ServerUseEquippedTool();
+
 	// Public function that other classes can call to attempt to give an item to the player
 	UFUNCTION()
 	void GiveItem(UItemDefinition* ItemDefinition);
