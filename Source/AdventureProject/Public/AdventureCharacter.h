@@ -39,6 +39,21 @@ public:
 	// Returns the location in the world the character is looking at
 	UFUNCTION()
 	FVector GetCameraTargetLocation();
+	// Health
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float MaxHealth = 100.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	float CurrentHealth;
+
+	// Take damage entry point. Returns actual damage dealt.
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	virtual float TakeDamageWrapper(float DamageAmount, AActor* DamageCauser);
+
+	// Death event — override in Blueprint or C++ subclass for custom death behavior
+	UFUNCTION(BlueprintNativeEvent, Category = "Health")
+	void OnDeath();
+
 
 
 protected:

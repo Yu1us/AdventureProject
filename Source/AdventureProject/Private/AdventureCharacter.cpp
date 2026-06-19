@@ -50,6 +50,7 @@ AAdventureCharacter::AAdventureCharacter()
 	FirstPersonCameraComponent->FirstPersonFieldOfView = FirstPersonFieldOfView;
 	FirstPersonCameraComponent->FirstPersonScale = FirstPersonScale;
 
+	CurrentHealth = MaxHealth;
 }
 
 // Called when the game starts or when spawned
@@ -284,4 +285,21 @@ FVector AAdventureCharacter::GetCameraTargetLocation()
 	}
 
 	return TargetPosition;
+}
+
+float AAdventureCharacter::TakeDamageWrapper(float DamageAmount, AActor* DamageCauser)
+{
+	CurrentHealth = FMath::Max(0.f, CurrentHealth - DamageAmount);
+
+	if (CurrentHealth <= 0.f)
+	{
+		OnDeath();
+	}
+
+	return DamageAmount;
+}
+
+void AAdventureCharacter::OnDeath_Implementation()
+{
+	// Default: do nothing. EnemyCharacter overrides this to Destroy().
 }

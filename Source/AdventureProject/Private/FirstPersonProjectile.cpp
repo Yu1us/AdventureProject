@@ -4,6 +4,7 @@
 #include "FirstPersonProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "AdventureCharacter.h"
 
 // Sets default values
 AFirstPersonProjectile::AFirstPersonProjectile()
@@ -71,6 +72,14 @@ void AFirstPersonProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 {
 	if (!HasAuthority())
 	{
+		return;
+	}
+
+	// If we hit a character (enemy), deal damage and destroy the dart
+	if (AAdventureCharacter* HitCharacter = Cast<AAdventureCharacter>(OtherActor))
+	{
+		HitCharacter->TakeDamageWrapper(ProjectileDamage, this);
+		Destroy();
 		return;
 	}
 

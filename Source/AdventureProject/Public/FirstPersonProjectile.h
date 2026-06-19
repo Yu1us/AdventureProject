@@ -22,7 +22,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile | Physics")
 	float PhysicsForce = 100.0f;
 
+	// Damage dealt to characters on hit
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile | Damage")
+	float ProjectileDamage = 25.0f;
+
 	// Called when the projectile collides with an object
+
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
