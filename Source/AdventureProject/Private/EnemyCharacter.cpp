@@ -3,6 +3,7 @@
 #include "EnemyCharacter.h"
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 AEnemyCharacter::AEnemyCharacter()
 {
@@ -35,6 +36,16 @@ void AEnemyCharacter::BeginPlay()
 	}
 	GetMesh()->SetOwnerNoSee(false);
 	GetMesh()->CastShadow = true;
+
+	// Apply color tint via dynamic material instance
+	if (GetMesh() && GetMesh()->GetMaterial(0))
+	{
+		UMaterialInstanceDynamic* DynMaterial = GetMesh()->CreateDynamicMaterialInstance(0);
+		if (DynMaterial)
+		{
+			DynMaterial->SetVectorParameterValue(TEXT("Base Color"), EnemyTint);
+		}
+	}
 }
 
 void AEnemyCharacter::OnDeath_Implementation()

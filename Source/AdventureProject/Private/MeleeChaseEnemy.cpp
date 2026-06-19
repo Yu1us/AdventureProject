@@ -4,6 +4,8 @@
 AMeleeChaseEnemy::AMeleeChaseEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	// Red tint for melee enemies
+	EnemyTint = FLinearColor(1.0f, 0.2f, 0.2f);
 }
 
 void AMeleeChaseEnemy::Tick(float DeltaTime)

@@ -19,6 +19,10 @@ class ADVENTUREPROJECT_API AEnemyCharacter : public AAdventureCharacter
 public:
 	AEnemyCharacter();
 
+	// Visual color tint applied to the mesh (set per subclass or in editor)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Appearance")
+	FLinearColor EnemyTint = FLinearColor::White;
+
 protected:
 	virtual void BeginPlay() override;
 
