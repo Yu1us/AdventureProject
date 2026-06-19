@@ -160,6 +160,7 @@ void APickupBase::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 
 /*	Updates this pickup whenever a property is changed.
 *	@param PropertyChangedEvent - contains info about the property that was changed. */
+#if WITH_EDITOR
 void APickupBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	// Handle parent class property changes
@@ -178,3 +179,4 @@ void APickupBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 	}
 
 }
+#endif
