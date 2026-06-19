@@ -60,10 +60,24 @@ void AAdventureCharacter::BeginPlay()
 	check(GEngine != nullptr);
 
 	// Set the animations on the first person mesh.
-	FirstPersonMeshComponent->SetAnimInstanceClass(FirstPersonDefaultAnim->GeneratedClass);
+	if (FirstPersonDefaultAnimClass)
+	{
+		FirstPersonMeshComponent->SetAnimInstanceClass(FirstPersonDefaultAnimClass);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s is missing FirstPersonDefaultAnimClass."), *GetNameSafe(this));
+	}
 
 	// Set the animations on the third-person mesh.
-	GetMesh()->SetAnimInstanceClass(FirstPersonDefaultAnim->GeneratedClass);
+	if (ThirdPersonDefaultAnimClass)
+	{
+		GetMesh()->SetAnimInstanceClass(ThirdPersonDefaultAnimClass);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s is missing ThirdPersonDefaultAnimClass."), *GetNameSafe(this));
+	}
 
 	// Only the owning player sees the first-person mesh
 	FirstPersonMeshComponent->SetOnlyOwnerSee(true);
@@ -173,8 +187,23 @@ void AAdventureCharacter::AttachTool(UEquippableToolDefinition* ToolDefinition)
 		ToolToEquip->AttachToComponent(FirstPersonMeshComponent, AttachmentRules, FName(TEXT("HandGrip_R")));
 
 		// Set the animations on the character's meshes.
-		FirstPersonMeshComponent->SetAnimInstanceClass(ToolToEquip->FirstPersonToolAnim->GeneratedClass);
-		GetMesh()->SetAnimInstanceClass(ToolToEquip->ThirdPersonToolAnim->GeneratedClass);
+		if (ToolToEquip->FirstPersonToolAnimClass)
+		{
+			FirstPersonMeshComponent->SetAnimInstanceClass(ToolToEquip->FirstPersonToolAnimClass);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s is missing FirstPersonToolAnimClass."), *GetNameSafe(ToolToEquip));
+		}
+
+		if (ToolToEquip->ThirdPersonToolAnimClass)
+		{
+			GetMesh()->SetAnimInstanceClass(ToolToEquip->ThirdPersonToolAnimClass);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s is missing ThirdPersonToolAnimClass."), *GetNameSafe(ToolToEquip));
+		}
 
 		// Add the tool to this character's inventory
 		InventoryComponent->ToolInventory.Add(ToolDefinition);

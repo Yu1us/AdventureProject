@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "EnhancedInputSubsystems.h"
-#include "Animation/AnimBlueprint.h" 
 #include "Components/SkeletalMeshComponent.h"
 #include "EquippableToolBase.generated.h"
 
 class AAdventureCharacter;
+class UAnimInstance;
 class UInputAction;
 class UInputMappingContext;
 
@@ -24,11 +24,11 @@ public:
 
 	// First Person animations
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<UAnimBlueprint> FirstPersonToolAnim;
+	TSubclassOf<UAnimInstance> FirstPersonToolAnimClass;
 
 	// Third Person animations
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<UAnimBlueprint> ThirdPersonToolAnim;
+	TSubclassOf<UAnimInstance> ThirdPersonToolAnimClass;
 
 	// Tool Skeletal Mesh
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

@@ -10,7 +10,7 @@
 #include "InputActionValue.h"
 #include "AdventureCharacter.generated.h"
 
-class UAnimBlueprint;
+class UAnimInstance;
 class UInputMappingContext;
 class UInputAction;
 class UInputComponent;
@@ -29,8 +29,12 @@ public:
 	AAdventureCharacter();
 
 	// First Person animations
-	UPROPERTY(EditAnywhere, Category = Animation)
-	TObjectPtr<UAnimBlueprint> FirstPersonDefaultAnim;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
+	TSubclassOf<UAnimInstance> FirstPersonDefaultAnimClass;
+
+	// Third Person animations
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
+	TSubclassOf<UAnimInstance> ThirdPersonDefaultAnimClass;
 
 	// Returns the location in the world the character is looking at
 	UFUNCTION()
