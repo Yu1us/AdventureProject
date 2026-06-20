@@ -6,7 +6,7 @@
 #include "EquippableToolBase.h"
 #include "DartLauncher.generated.h"
 
-class AFirstPersonProjectile;
+class AProjectileBase;
 
 UCLASS(BlueprintType, Blueprintable)
 class ADVENTUREPROJECT_API ADartLauncher : public AEquippableToolBase
@@ -25,6 +25,6 @@ public:
 
 	// Projectile class to spawn
 	UPROPERTY(EditAnywhere, Category = "Projectile")
-	TSubclassOf<AFirstPersonProjectile> ProjectileClass;
+	TSubclassOf<AProjectileBase> ProjectileClass;
 
 };

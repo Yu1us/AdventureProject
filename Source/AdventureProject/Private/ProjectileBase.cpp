@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FirstPersonProjectile.h"
+#include "ProjectileBase.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "AdventureCharacter.h"
 
 // Sets default values
-AFirstPersonProjectile::AFirstPersonProjectile()
+AProjectileBase::AProjectileBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -35,7 +35,7 @@ AFirstPersonProjectile::AFirstPersonProjectile()
 	CollisionComponent->BodyInstance.SetCollisionProfileName("Projectile");
 
 	// Set up a notification for when this component hits something blocking
-	CollisionComponent->OnComponentHit.AddDynamic(this, &AFirstPersonProjectile::OnHit);
+	CollisionComponent->OnComponentHit.AddDynamic(this, &AProjectileBase::OnHit);
 
 	// Set as root component and UpdatedComponent
 	RootComponent = CollisionComponent;
@@ -48,7 +48,7 @@ AFirstPersonProjectile::AFirstPersonProjectile()
 	ProjectileMovement->bShouldBounce = true;
 	ProjectileMovement->Bounciness = 0.4f;
 	ProjectileMovement->Friction = 0.7f;
-	ProjectileMovement->OnProjectileBounce.AddDynamic(this, &AFirstPersonProjectile::OnProjectileBounce);
+	ProjectileMovement->OnProjectileBounce.AddDynamic(this, &AProjectileBase::OnProjectileBounce);
 
 	// Disappear after 5.0 seconds by default.
 	InitialLifeSpan = ProjectileLifespan;
@@ -56,27 +56,27 @@ AFirstPersonProjectile::AFirstPersonProjectile()
 }
 
 // Called when the game starts or when spawned
-void AFirstPersonProjectile::BeginPlay()
+void AProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
 // Called every frame
-void AFirstPersonProjectile::Tick(float DeltaTime)
+void AProjectileBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
-void AFirstPersonProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (!HasAuthority())
 	{
 		return;
 	}
 
-	// If we hit a character (enemy), deal damage and destroy the dart
+	// If we hit a character (enemy), deal damage and destroy the projectile
 	if (AAdventureCharacter* HitCharacter = Cast<AAdventureCharacter>(OtherActor))
 	{
 		if (bHasBounced)
@@ -88,7 +88,7 @@ void AFirstPersonProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 		return;
 	}
 
-	// If we hit the ground (mostly-up surface normal), lay the dart flat.
+	// If we hit the ground (mostly-up surface normal), lay the projectile flat.
 	if (FVector::DotProduct(Hit.ImpactNormal, FVector::UpVector) > 0.7f)
 	{
 		FRotator Flat = GetActorRotation();
@@ -108,7 +108,7 @@ void AFirstPersonProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 	}
 }
 
-void AFirstPersonProjectile::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
+void AProjectileBase::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
 {
 	if (HasAuthority())
 	{

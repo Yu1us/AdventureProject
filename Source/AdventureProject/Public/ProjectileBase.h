@@ -4,19 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "FirstPersonProjectile.generated.h"
+#include "ProjectileBase.generated.h"
 
 class UProjectileMovementComponent;
 class USphereComponent;
 
 UCLASS(BlueprintType, Blueprintable)
-class ADVENTUREPROJECT_API AFirstPersonProjectile : public AActor
+class ADVENTUREPROJECT_API AProjectileBase : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AFirstPersonProjectile();
+	AProjectileBase();
 	
 	// The amount of force this projectile imparts on objects it collides with
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile | Physics")

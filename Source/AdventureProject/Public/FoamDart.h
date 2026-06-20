@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FirstPersonProjectile.h"
+#include "ProjectileBase.h"
 #include "FoamDart.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ADVENTUREPROJECT_API AFoamDart : public AFirstPersonProjectile
+class ADVENTUREPROJECT_API AFoamDart : public AProjectileBase
 {
 	GENERATED_BODY()
 	

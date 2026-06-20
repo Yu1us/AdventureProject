@@ -2,7 +2,7 @@
 
 
 #include "Tools/DartLauncher.h"
-#include "FirstPersonProjectile.h"  
+#include "ProjectileBase.h"  
 #include "Kismet/KismetMathLibrary.h"
 #include "EnhancedInputComponent.h" 
 #include "AdventureCharacter.h"
@@ -50,7 +50,7 @@ void ADartLauncher::UseAtTarget(FVector TargetPosition)
 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 		// Spawn the projectile at the muzzle
-		World->SpawnActor<AFirstPersonProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+		World->SpawnActor<AProjectileBase>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 
 	}
 }
