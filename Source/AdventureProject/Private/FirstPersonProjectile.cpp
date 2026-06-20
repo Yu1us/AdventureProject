@@ -46,8 +46,9 @@ AFirstPersonProjectile::AFirstPersonProjectile()
 	ProjectileMovement->MaxSpeed = 3000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = true;
-	ProjectileMovement->Bounciness = 0.2f;
-	ProjectileMovement->Friction = 0.8f;
+	ProjectileMovement->Bounciness = 0.8f;
+	ProjectileMovement->Friction = 0.2f;
+	ProjectileMovement->OnProjectileBounce.AddDynamic(this, &AFirstPersonProjectile::OnProjectileBounce);
 
 	// Disappear after 5.0 seconds by default.
 	InitialLifeSpan = ProjectileLifespan;
@@ -78,7 +79,11 @@ void AFirstPersonProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 	// If we hit a character (enemy), deal damage and destroy the dart
 	if (AAdventureCharacter* HitCharacter = Cast<AAdventureCharacter>(OtherActor))
 	{
-		HitCharacter->TakeDamageWrapper(ProjectileDamage, this);
+		if (bHasBounced)
+		{
+			HitCharacter->TakeDamageWrapper(ProjectileDamage, this);
+		}
+
 		Destroy();
 		return;
 	}
@@ -100,5 +105,13 @@ void AFirstPersonProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 		OtherComp->AddImpulseAtLocation(GetVelocity() * PhysicsForce, GetActorLocation());
 
 		Destroy();
+	}
+}
+
+void AFirstPersonProjectile::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
+{
+	if (HasAuthority())
+	{
+		bHasBounced = true;
 	}
 }

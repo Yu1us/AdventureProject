@@ -31,6 +31,9 @@ public:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	UFUNCTION()
+	void OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity);
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile | Mesh")
 	TObjectPtr<UStaticMeshComponent> ProjectileMesh;
 
@@ -49,6 +52,9 @@ protected:
 	// Projectile movement component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile | Components")
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Projectile | Damage")
+	bool bHasBounced = false;
 
 public:	
 	// Called every frame
