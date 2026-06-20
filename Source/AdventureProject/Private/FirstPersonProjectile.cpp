@@ -46,8 +46,8 @@ AFirstPersonProjectile::AFirstPersonProjectile()
 	ProjectileMovement->MaxSpeed = 3000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = true;
-	ProjectileMovement->Bounciness = 0.8f;
-	ProjectileMovement->Friction = 0.2f;
+	ProjectileMovement->Bounciness = 0.4f;
+	ProjectileMovement->Friction = 0.7f;
 	ProjectileMovement->OnProjectileBounce.AddDynamic(this, &AFirstPersonProjectile::OnProjectileBounce);
 
 	// Disappear after 5.0 seconds by default.
