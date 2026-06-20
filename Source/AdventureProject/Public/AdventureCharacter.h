@@ -17,6 +17,7 @@ class UInputAction;
 class UInputComponent;
 class UItemDefinition;
 class AEquippableToolBase;
+class AController;
 class UEquippableToolDefinition;
 class UInventoryComponent;
 
@@ -47,9 +48,20 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_CurrentHealth, Category = "Health")
 	float CurrentHealth;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_IsDead, Category = "Health")
+	bool bIsDead = false;
+
 	// Take damage entry point. Returns actual damage dealt.
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual float TakeDamageWrapper(float DamageAmount, AActor* DamageCauser);
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void RestoreFullHealth();
+
+	UFUNCTION(BlueprintPure, Category = "Health")
+	bool IsDead() const { return bIsDead; }
+
+	AController* GetLastDamageInstigatorController() const { return LastDamageInstigatorController; }
 
 	// Death event — override in Blueprint or C++ subclass for custom death behavior
 	UFUNCTION(BlueprintNativeEvent, Category = "Health")
@@ -145,5 +157,14 @@ private:
 	UFUNCTION()
 	void OnRep_CurrentHealth();
 
+	UFUNCTION()
+	void OnRep_IsDead();
+
+	UPROPERTY()
+	TObjectPtr<AController> LastDamageInstigatorController;
+
+	AController* ResolveDamageInstigatorController(AActor* DamageCauser) const;
+	void SetDeadState(bool bNewIsDead);
+	void ApplyDeadState();
 	void ShowHealthDebug() const;
 };

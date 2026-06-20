@@ -2,6 +2,7 @@
 
 
 #include "AdventureGameState.h"
+#include "AdventurePlayerState.h"
 #include "Net/UnrealNetwork.h"
 
 AAdventureGameState::AAdventureGameState()
@@ -9,10 +10,11 @@ AAdventureGameState::AAdventureGameState()
 	bReplicates = true;
 }
 
-void AAdventureGameState::SetMatchState(int32 InKillTarget, int32 InCurrentStreak, bool bInGameEnded, EAdventureMatchResult InMatchResult)
+void AAdventureGameState::SetMatchState(int32 InKillTarget, int32 InCurrentStreak, int32 InTeamKills, bool bInGameEnded, EAdventureMatchResult InMatchResult)
 {
 	KillTarget = InKillTarget;
 	CurrentStreak = InCurrentStreak;
+	TeamKills = InTeamKills;
 	bGameEnded = bInGameEnded;
 	MatchResult = InMatchResult;
 }
@@ -23,6 +25,7 @@ void AAdventureGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	DOREPLIFETIME(AAdventureGameState, KillTarget);
 	DOREPLIFETIME(AAdventureGameState, CurrentStreak);
+	DOREPLIFETIME(AAdventureGameState, TeamKills);
 	DOREPLIFETIME(AAdventureGameState, bGameEnded);
 	DOREPLIFETIME(AAdventureGameState, MatchResult);
 }
@@ -33,6 +36,11 @@ void AAdventureGameState::OnRep_KillTarget()
 }
 
 void AAdventureGameState::OnRep_CurrentStreak()
+{
+	ShowComboDebug();
+}
+
+void AAdventureGameState::OnRep_TeamKills()
 {
 	ShowComboDebug();
 }
@@ -48,7 +56,7 @@ void AAdventureGameState::OnRep_MatchResult()
 
 void AAdventureGameState::ShowComboDebug() const
 {
-	const FString Message = FString::Printf(TEXT("Combo: %d / %d"), CurrentStreak, KillTarget);
+	const FString Message = FString::Printf(TEXT("Team Kills: %d / %d | Team Combo: %d"), TeamKills, KillTarget, CurrentStreak);
 	UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
 
 	if (GEngine)
@@ -70,7 +78,7 @@ void AAdventureGameState::ShowResultDebug() const
 	switch (MatchResult)
 	{
 	case EAdventureMatchResult::Victory:
-		Message = FString::Printf(TEXT("=== VICTORY! %d kills without getting hit! ==="), KillTarget);
+		Message = FString::Printf(TEXT("=== VICTORY! Team reached %d kills! ==="), KillTarget);
 		Color = FColor::Green;
 		break;
 	case EAdventureMatchResult::Defeat:
@@ -86,5 +94,31 @@ void AAdventureGameState::ShowResultDebug() const
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 30.0f, Color, Message);
+	}
+
+	ShowScoreboardDebug();
+}
+
+void AAdventureGameState::ShowScoreboardDebug() const
+{
+	for (APlayerState* PlayerState : PlayerArray)
+	{
+		if (const AAdventurePlayerState* AdventurePlayerState = Cast<AAdventurePlayerState>(PlayerState))
+		{
+			const FString Message = FString::Printf(
+				TEXT("%s | K:%d D:%d Damage:%.0f BestCombo:%d"),
+				*AdventurePlayerState->GetPlayerName(),
+				AdventurePlayerState->Kills,
+				AdventurePlayerState->Deaths,
+				AdventurePlayerState->DamageTaken,
+				AdventurePlayerState->BestCombo);
+
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Yellow, Message);
+			}
+		}
 	}
 }

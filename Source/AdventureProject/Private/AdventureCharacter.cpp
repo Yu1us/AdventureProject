@@ -7,13 +7,13 @@
 #include "InventoryComponent.h"
 #include "EquippableToolDefinition.h"
 #include "EquippableToolBase.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
 AAdventureCharacter::AAdventureCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	// Create a first-person camera component
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -62,6 +62,7 @@ void AAdventureCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AAdventureCharacter, CurrentHealth);
+	DOREPLIFETIME(AAdventureCharacter, bIsDead);
 }
 
 // Called when the game starts or when spawned
@@ -70,6 +71,12 @@ void AAdventureCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	check(GEngine != nullptr);
+
+	if (HasAuthority())
+	{
+		CurrentHealth = MaxHealth;
+		SetDeadState(false);
+	}
 
 	// Set the animations on the first person mesh.
 	if (FirstPersonDefaultAnimClass)
@@ -236,7 +243,7 @@ void AAdventureCharacter::AttachTool(UEquippableToolDefinition* ToolDefinition)
 
 void AAdventureCharacter::ServerUseEquippedTool_Implementation(FVector_NetQuantize TargetPosition)
 {
-	if (EquippedTool != nullptr)
+	if (EquippedTool != nullptr && !bIsDead && CurrentHealth > 0.0f)
 	{
 		EquippedTool->UseAtTarget(TargetPosition);
 	}
@@ -299,10 +306,12 @@ FVector AAdventureCharacter::GetCameraTargetLocation()
 
 float AAdventureCharacter::TakeDamageWrapper(float DamageAmount, AActor* DamageCauser)
 {
-	if (!HasAuthority() || CurrentHealth <= 0.f || DamageAmount <= 0.f)
+	if (!HasAuthority() || bIsDead || CurrentHealth <= 0.f || DamageAmount <= 0.f)
 	{
 		return 0.f;
 	}
+
+	LastDamageInstigatorController = ResolveDamageInstigatorController(DamageCauser);
 
 	const float PreviousHealth = CurrentHealth;
 	CurrentHealth = FMath::Max(0.f, CurrentHealth - DamageAmount);
@@ -314,17 +323,19 @@ float AAdventureCharacter::TakeDamageWrapper(float DamageAmount, AActor* DamageC
 	{
 		if (AAdventureGameMode* GM = Cast<AAdventureGameMode>(UGameplayStatics::GetGameMode(this)))
 		{
-			GM->NotifyPlayerHit();
+			GM->NotifyPlayerDamaged(GetController(), ActualDamage);
 		}
 	}
 
 	if (CurrentHealth <= 0.f)
 	{
+		SetDeadState(true);
+
 		if (IsPlayerControlled())
 		{
 			if (AAdventureGameMode* GM = Cast<AAdventureGameMode>(UGameplayStatics::GetGameMode(this)))
 			{
-				GM->NotifyPlayerDeath();
+				GM->NotifyPlayerDeathForController(GetController(), LastDamageInstigatorController);
 			}
 		}
 		OnDeath();
@@ -341,6 +352,78 @@ void AAdventureCharacter::OnDeath_Implementation()
 void AAdventureCharacter::OnRep_CurrentHealth()
 {
 	ShowHealthDebug();
+}
+
+void AAdventureCharacter::RestoreFullHealth()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	CurrentHealth = MaxHealth;
+	SetDeadState(false);
+	ShowHealthDebug();
+}
+
+void AAdventureCharacter::OnRep_IsDead()
+{
+	ApplyDeadState();
+}
+
+AController* AAdventureCharacter::ResolveDamageInstigatorController(AActor* DamageCauser) const
+{
+	if (DamageCauser == nullptr)
+	{
+		return nullptr;
+	}
+
+	if (AController* InstigatorController = DamageCauser->GetInstigatorController())
+	{
+		return InstigatorController;
+	}
+
+	if (const APawn* InstigatorPawn = Cast<APawn>(DamageCauser->GetInstigator()))
+	{
+		return InstigatorPawn->GetController();
+	}
+
+	if (const APawn* DamagePawn = Cast<APawn>(DamageCauser))
+	{
+		return DamagePawn->GetController();
+	}
+
+	if (const AActor* DamageOwner = DamageCauser->GetOwner())
+	{
+		return DamageOwner->GetInstigatorController();
+	}
+
+	return nullptr;
+}
+
+void AAdventureCharacter::SetDeadState(bool bNewIsDead)
+{
+	bIsDead = bNewIsDead;
+	ApplyDeadState();
+}
+
+void AAdventureCharacter::ApplyDeadState()
+{
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		if (bIsDead)
+		{
+			MovementComponent->StopMovementImmediately();
+			MovementComponent->DisableMovement();
+		}
+		else
+		{
+			MovementComponent->SetMovementMode(MOVE_Walking);
+		}
+	}
+
+	SetActorEnableCollision(!bIsDead);
+	SetActorHiddenInGame(bIsDead);
 }
 
 void AAdventureCharacter::ShowHealthDebug() const

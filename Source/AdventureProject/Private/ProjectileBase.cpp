@@ -9,8 +9,7 @@
 // Sets default values
 AProjectileBase::AProjectileBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	SetReplicateMovement(true);
 
@@ -79,6 +78,11 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 	// If we hit a character (enemy), deal damage and destroy the projectile
 	if (AAdventureCharacter* HitCharacter = Cast<AAdventureCharacter>(OtherActor))
 	{
+		if (HitCharacter == GetInstigator())
+		{
+			return;
+		}
+
 		if (bHasBounced)
 		{
 			HitCharacter->TakeDamageWrapper(ProjectileDamage, this);

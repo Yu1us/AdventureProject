@@ -1,10 +1,13 @@
 #include "AdventureGameMode.h"
+#include "AdventureCharacter.h"
 #include "EnemySpawner.h"
+#include "AdventurePlayerState.h"
 #include "Kismet/GameplayStatics.h"
 
 AAdventureGameMode::AAdventureGameMode()
 {
 	GameStateClass = AAdventureGameState::StaticClass();
+	PlayerStateClass = AAdventurePlayerState::StaticClass();
 }
 
 void AAdventureGameMode::StartPlay()
@@ -14,7 +17,7 @@ void AAdventureGameMode::StartPlay()
 	check(GEngine != nullptr);
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow,
-		FString::Printf(TEXT("Combo Challenge: Kill %d enemies without getting hit!"), KillTarget));
+		FString::Printf(TEXT("PvPvE Challenge: Reach %d enemy kills while fighting players!"), KillTarget));
 	UE_LOG(LogTemp, Warning, TEXT("AdventureGameMode: KillTarget = %d"), KillTarget);
 
 	SyncGameState(EAdventureMatchResult::InProgress);
@@ -22,17 +25,28 @@ void AAdventureGameMode::StartPlay()
 
 void AAdventureGameMode::RegisterEnemyKill()
 {
+	RegisterEnemyKillForController(nullptr);
+}
+
+void AAdventureGameMode::RegisterEnemyKillForController(AController* KillerController)
+{
 	if (bGameEnded)
 	{
 		return;
 	}
 
 	++CurrentStreak;
+	++TeamKills;
+
+	if (AAdventurePlayerState* KillerState = KillerController ? KillerController->GetPlayerState<AAdventurePlayerState>() : nullptr)
+	{
+		KillerState->AddKill();
+	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan,
-		FString::Printf(TEXT("Combo: %d / %d"), CurrentStreak, KillTarget));
+		FString::Printf(TEXT("Team Kills: %d / %d | Team Combo: %d"), TeamKills, KillTarget, CurrentStreak));
 
-	if (CurrentStreak >= KillTarget)
+	if (TeamKills >= KillTarget)
 	{
 		TriggerVictory();
 		return;
@@ -43,9 +57,19 @@ void AAdventureGameMode::RegisterEnemyKill()
 
 void AAdventureGameMode::NotifyPlayerHit()
 {
+	NotifyPlayerDamaged(nullptr, 0.0f);
+}
+
+void AAdventureGameMode::NotifyPlayerDamaged(AController* DamagedController, float DamageAmount)
+{
 	if (bGameEnded)
 	{
 		return;
+	}
+
+	if (AAdventurePlayerState* DamagedState = DamagedController ? DamagedController->GetPlayerState<AAdventurePlayerState>() : nullptr)
+	{
+		DamagedState->AddDamageTaken(DamageAmount);
 	}
 
 	if (CurrentStreak > 0)
@@ -59,12 +83,45 @@ void AAdventureGameMode::NotifyPlayerHit()
 
 void AAdventureGameMode::NotifyPlayerDeath()
 {
+	NotifyPlayerDeathForController(nullptr, nullptr);
+}
+
+void AAdventureGameMode::NotifyPlayerDeathForController(AController* DeadController, AController* KillerController)
+{
 	if (bGameEnded)
 	{
 		return;
 	}
 
-	TriggerDefeat();
+	if (AAdventurePlayerState* DeadState = DeadController ? DeadController->GetPlayerState<AAdventurePlayerState>() : nullptr)
+	{
+		DeadState->AddDeath();
+	}
+
+	if (KillerController != nullptr && KillerController != DeadController)
+	{
+		if (AAdventurePlayerState* KillerState = KillerController->GetPlayerState<AAdventurePlayerState>())
+		{
+			KillerState->AddKill();
+			const FString DeadPlayerName = DeadController && DeadController->PlayerState ? DeadController->PlayerState->GetPlayerName() : TEXT("Player");
+
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange,
+				FString::Printf(TEXT("PvP Elimination: %s defeated %s"),
+					*KillerState->GetPlayerName(),
+					*DeadPlayerName));
+		}
+	}
+
+	if (DeadController)
+	{
+		FTimerDelegate RespawnDelegate;
+		RespawnDelegate.BindUObject(this, &AAdventureGameMode::RespawnPlayer, DeadController);
+
+		FTimerHandle RespawnTimerHandle;
+		GetWorldTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, RespawnDelay, false);
+	}
+
+	SyncGameState(EAdventureMatchResult::InProgress);
 }
 
 void AAdventureGameMode::TriggerVictory()
@@ -73,8 +130,8 @@ void AAdventureGameMode::TriggerVictory()
 	SyncGameState(EAdventureMatchResult::Victory);
 
 	GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Green,
-		FString::Printf(TEXT("=== VICTORY! %d kills without getting hit! ==="), KillTarget));
-	UE_LOG(LogTemp, Warning, TEXT("VICTORY! %d combo kills achieved."), KillTarget);
+		FString::Printf(TEXT("=== VICTORY! Team reached %d kills! ==="), KillTarget));
+	UE_LOG(LogTemp, Warning, TEXT("VICTORY! Team reached %d kills."), KillTarget);
 
 	StopAllSpawners();
 }
@@ -95,7 +152,7 @@ void AAdventureGameMode::SyncGameState(EAdventureMatchResult MatchResult)
 {
 	if (AAdventureGameState* AdventureGameState = GetGameState<AAdventureGameState>())
 	{
-		AdventureGameState->SetMatchState(KillTarget, CurrentStreak, bGameEnded, MatchResult);
+		AdventureGameState->SetMatchState(KillTarget, CurrentStreak, TeamKills, bGameEnded, MatchResult);
 	}
 	else
 	{
@@ -114,5 +171,23 @@ void AAdventureGameMode::StopAllSpawners()
 		{
 			Spawner->StopSpawning();
 		}
+	}
+}
+
+void AAdventureGameMode::RespawnPlayer(AController* ControllerToRespawn)
+{
+	if (!IsValid(ControllerToRespawn) || bGameEnded)
+	{
+		return;
+	}
+
+	if (AAdventureCharacter* Character = Cast<AAdventureCharacter>(ControllerToRespawn->GetPawn()))
+	{
+		if (AActor* StartSpot = ChoosePlayerStart(ControllerToRespawn))
+		{
+			Character->SetActorLocationAndRotation(StartSpot->GetActorLocation(), StartSpot->GetActorRotation(), false, nullptr, ETeleportType::TeleportPhysics);
+		}
+
+		Character->RestoreFullHealth();
 	}
 }

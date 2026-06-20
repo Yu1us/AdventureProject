@@ -11,7 +11,7 @@ void ADartLauncher::Use()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Using the dart launcher!"));
 
-	if (OwningCharacter == nullptr)
+	if (OwningCharacter == nullptr || OwningCharacter->IsDead())
 	{
 		return;
 	}

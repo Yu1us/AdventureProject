@@ -135,7 +135,7 @@ void ARaycastEnemy::TickFiring(float DeltaTime)
 	{
 		if (AAdventureCharacter* HitChar = Cast<AAdventureCharacter>(Hit.GetActor()))
 		{
-			DamagePlayer(RayDamage);
+			HitChar->TakeDamageWrapper(RayDamage, this);
 		}
 	}
 

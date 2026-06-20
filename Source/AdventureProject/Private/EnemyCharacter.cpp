@@ -51,14 +51,43 @@ void AEnemyCharacter::OnDeath_Implementation()
 {
 	if (AAdventureGameMode* GM = Cast<AAdventureGameMode>(UGameplayStatics::GetGameMode(this)))
 	{
-		GM->RegisterEnemyKill();
+		GM->RegisterEnemyKillForController(GetLastDamageInstigatorController());
 	}
 	Destroy();
 }
 
 APawn* AEnemyCharacter::GetTargetPlayer() const
 {
-	return UGameplayStatics::GetPlayerPawn(this, 0);
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return nullptr;
+	}
+
+	APawn* BestPawn = nullptr;
+	float BestDistanceSquared = TNumericLimits<float>::Max();
+	const FVector MyLocation = GetActorLocation();
+
+	for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+	{
+		const APlayerController* PlayerController = It->Get();
+		APawn* CandidatePawn = PlayerController ? PlayerController->GetPawn() : nullptr;
+		const AAdventureCharacter* CandidateCharacter = Cast<AAdventureCharacter>(CandidatePawn);
+
+		if (CandidateCharacter == nullptr || CandidateCharacter->IsDead())
+		{
+			continue;
+		}
+
+		const float DistanceSquared = FVector::DistSquared(MyLocation, CandidatePawn->GetActorLocation());
+		if (DistanceSquared < BestDistanceSquared)
+		{
+			BestDistanceSquared = DistanceSquared;
+			BestPawn = CandidatePawn;
+		}
+	}
+
+	return BestPawn;
 }
 
 void AEnemyCharacter::DamagePlayer(float Amount)
