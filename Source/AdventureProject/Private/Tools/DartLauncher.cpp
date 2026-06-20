@@ -16,17 +16,27 @@ void ADartLauncher::Use()
 		return;
 	}
 
+	const FVector TargetPosition = OwningCharacter->GetCameraTargetLocation();
+
 	if (ShouldRequestServerUse())
 	{
-		OwningCharacter->ServerUseEquippedTool();
+		OwningCharacter->ServerUseEquippedTool(FVector_NetQuantize(TargetPosition));
+		return;
+	}
+
+	UseAtTarget(TargetPosition);
+}
+
+void ADartLauncher::UseAtTarget(FVector TargetPosition)
+{
+	if (OwningCharacter == nullptr || !OwningCharacter->HasAuthority())
+	{
 		return;
 	}
 
 	UWorld* const World = GetWorld();
 	if (World != nullptr && ProjectileClass != nullptr)
 	{
-		FVector TargetPosition = OwningCharacter->GetCameraTargetLocation();
-
 		// Get the correct socket to spawn the projectile from
 		FVector SocketLocation = ToolMeshComponent->GetSocketLocation("Muzzle");
 		// Get projectile's rotation as it spawns so we know in what direction to apply an offset 

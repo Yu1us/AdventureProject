@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Camera/CameraComponent.h"
+#include "Engine/NetSerialization.h"
 #include "GameFramework/Character.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h" 
@@ -132,7 +133,7 @@ public:
 
 	// Requests the server to use the currently-equipped tool.
 	UFUNCTION(Server, Reliable)
-	void ServerUseEquippedTool();
+	void ServerUseEquippedTool(FVector_NetQuantize TargetPosition);
 
 	// Public function that other classes can call to attempt to give an item to the player
 	UFUNCTION()

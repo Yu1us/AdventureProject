@@ -225,11 +225,11 @@ void AAdventureCharacter::AttachTool(UEquippableToolDefinition* ToolDefinition)
 	}
 }
 
-void AAdventureCharacter::ServerUseEquippedTool_Implementation()
+void AAdventureCharacter::ServerUseEquippedTool_Implementation(FVector_NetQuantize TargetPosition)
 {
 	if (EquippedTool != nullptr)
 	{
-		EquippedTool->Use();
+		EquippedTool->UseAtTarget(TargetPosition);
 	}
 }
 

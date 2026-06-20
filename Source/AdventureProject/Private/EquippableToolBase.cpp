@@ -36,6 +36,11 @@ void AEquippableToolBase::Use()
 {
 }
 
+void AEquippableToolBase::UseAtTarget(FVector)
+{
+	Use();
+}
+
 void AEquippableToolBase::BindInputAction(const UInputAction* ActionToBind)
 {
 }

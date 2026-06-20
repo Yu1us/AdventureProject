@@ -17,6 +17,8 @@ public:
 
 	virtual void Use() override;
 
+	virtual void UseAtTarget(FVector TargetPosition) override;
+
 	virtual void BindInputAction(const UInputAction* InputToBind) override;
 
 	bool ShouldRequestServerUse() const;

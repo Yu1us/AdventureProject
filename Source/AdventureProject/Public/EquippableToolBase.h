@@ -46,6 +46,10 @@ public:
 	UFUNCTION()
 	virtual void Use();
 
+	// Use the tool toward a target point.
+	UFUNCTION()
+	virtual void UseAtTarget(FVector TargetPosition);
+
 	// Binds the Use function to the owning character
 	UFUNCTION()
 	virtual void BindInputAction(const UInputAction* ActionToBind);
