@@ -19,6 +19,11 @@ void ARaycastEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!HasAuthority() || IsDead())
+	{
+		return;
+	}
+
 	switch (CurrentState)
 	{
 	case ERaycastState::Aiming:

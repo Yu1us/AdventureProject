@@ -17,6 +17,11 @@ void ADashEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!HasAuthority() || IsDead())
+	{
+		return;
+	}
+
 	switch (CurrentState)
 	{
 	case EDashState::Tracking:
@@ -104,7 +109,7 @@ void ADashEnemy::TickDashing(float DeltaTime)
 	// Check if we hit something
 	if (Hit.bBlockingHit)
 	{
-		// Hit a wall or other static object — stop and recover
+		// Hit a wall or other static object - stop and recover
 		if (Hit.Component.IsValid() && !Hit.Component->IsSimulatingPhysics())
 		{
 			CurrentState = EDashState::Recover;
@@ -141,7 +146,7 @@ void ADashEnemy::TickDashing(float DeltaTime)
 
 void ADashEnemy::TickRecover(float DeltaTime)
 {
-	// Stunned — just wait
+	// Stunned - just wait
 	DrawDebugSphere(GetWorld(), GetActorLocation() + FVector(0, 0, 80), 20.0f, 8, FColor::Yellow, false, -1.0f);
 
 	StateTimer -= DeltaTime;

@@ -35,24 +35,38 @@ void ADartLauncher::UseAtTarget(FVector TargetPosition)
 	}
 
 	UWorld* const World = GetWorld();
-	if (World != nullptr && ProjectileClass != nullptr)
+	if (World == nullptr || ProjectileClass == nullptr)
 	{
-		// Get the correct socket to spawn the projectile from
-		FVector SocketLocation = ToolMeshComponent->GetSocketLocation("Muzzle");
-		// Get projectile's rotation as it spawns so we know in what direction to apply an offset 
-		FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(SocketLocation, TargetPosition);
-		FVector SpawnLocation = SocketLocation + UKismetMathLibrary::GetForwardVector(SpawnRotation) * 10.0;
-
-		//Set Spawn Collision Handling Override
-		FActorSpawnParameters ActorSpawnParams;
-		ActorSpawnParams.Owner = OwningCharacter;
-		ActorSpawnParams.Instigator = OwningCharacter;
-		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-		// Spawn the projectile at the muzzle
-		World->SpawnActor<AProjectileBase>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
-
+		return;
 	}
+
+	const float Now = World->GetTimeSeconds();
+	if (Now < NextServerFireTime)
+	{
+		return;
+	}
+
+	if (ToolMeshComponent == nullptr)
+	{
+		return;
+	}
+
+	NextServerFireTime = Now + FireInterval;
+
+	// Get the correct socket to spawn the projectile from
+	FVector SocketLocation = ToolMeshComponent->GetSocketLocation("Muzzle");
+	// Get projectile's rotation as it spawns so we know in what direction to apply an offset
+	FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(SocketLocation, TargetPosition);
+	FVector SpawnLocation = SocketLocation + UKismetMathLibrary::GetForwardVector(SpawnRotation) * 10.0;
+
+	//Set Spawn Collision Handling Override
+	FActorSpawnParameters ActorSpawnParams;
+	ActorSpawnParams.Owner = OwningCharacter;
+	ActorSpawnParams.Instigator = OwningCharacter;
+	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+	// Spawn the projectile at the muzzle
+	World->SpawnActor<AProjectileBase>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 }
 
 bool ADartLauncher::ShouldRequestServerUse() const
@@ -68,7 +82,7 @@ void ADartLauncher::BindInputAction(const UInputAction* InputToBind)
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
 		{
 			// Fire
-			EnhancedInputComponent->BindAction(InputToBind, ETriggerEvent::Triggered, this, &ADartLauncher::Use);
+			EnhancedInputComponent->BindAction(InputToBind, ETriggerEvent::Started, this, &ADartLauncher::Use);
 
 		}
 	}

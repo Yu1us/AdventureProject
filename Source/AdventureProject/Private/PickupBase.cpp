@@ -8,8 +8,7 @@
 // Sets default values
 APickupBase::APickupBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	// Create this pickup's mesh component
 	PickupMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMesh"));
@@ -44,7 +43,7 @@ void APickupBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Ensure we don¡¯t bind the overlap event more than once   
+	// Ensure we don't bind the overlap event more than once
 	SphereComponent->OnComponentBeginOverlap.RemoveAll(this);
 
 	// Register the overlap event so it runs when an overlap happens
@@ -55,13 +54,6 @@ void APickupBase::BeginPlay()
 
 	// Initialize this pickup with default values
 	InitializePickup();
-}
-
-// Called every frame
-void APickupBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 // Initializes the pickup with values retrieved from the associated data table.
@@ -105,7 +97,7 @@ void APickupBase::InitializePickup()
 		ReferenceItem = TempItemDefinition->CreateItemCopy(this);
 
 		// Resolve the item's world mesh from the item definition.
-		// This uses the mesh if it¡¯s already in memory, or loads it if it isn¡¯t.
+		// This uses the mesh if it's already in memory, or loads it if it isn't.
 		UStaticMesh* LoadedMesh = TempItemDefinition->WorldMesh.IsValid()
 			? TempItemDefinition->WorldMesh.Get()
 			: TempItemDefinition->WorldMesh.LoadSynchronous();

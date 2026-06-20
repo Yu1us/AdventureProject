@@ -27,4 +27,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	TSubclassOf<AProjectileBase> ProjectileClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile")
+	float FireInterval = 0.5f;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Projectile")
+	float NextServerFireTime = 0.0f;
 };

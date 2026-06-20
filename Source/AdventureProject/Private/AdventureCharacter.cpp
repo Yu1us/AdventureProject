@@ -122,13 +122,6 @@ void AAdventureCharacter::BeginPlay()
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using AdventureCharacter."));
 }
 
-// Called every frame
-void AAdventureCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 // Called to bind functionality to input
 void AAdventureCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {

@@ -12,6 +12,11 @@ void AMeleeChaseEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!HasAuthority() || IsDead())
+	{
+		return;
+	}
+
 	switch (CurrentState)
 	{
 	case EMeleeState::Chasing:
@@ -54,7 +59,7 @@ void AMeleeChaseEnemy::TickChasing(float DeltaTime)
 	}
 	else
 	{
-		// Close enough — switch to attack
+		// Close enough - switch to attack
 		CurrentState = EMeleeState::Attacking;
 	}
 }

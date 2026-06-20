@@ -63,7 +63,7 @@ public:
 
 	AController* GetLastDamageInstigatorController() const { return LastDamageInstigatorController; }
 
-	// Death event — override in Blueprint or C++ subclass for custom death behavior
+	// Death event - override in Blueprint or C++ subclass for custom death behavior
 	UFUNCTION(BlueprintNativeEvent, Category = "Health")
 	void OnDeath();
 
@@ -98,9 +98,6 @@ protected:
 
 public:	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
