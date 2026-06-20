@@ -2,6 +2,8 @@
 
 #include "EnemySpawner.h"
 #include "EnemyCharacter.h"
+#include "AdventureGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 
 AEnemySpawner::AEnemySpawner()
@@ -36,6 +38,16 @@ void AEnemySpawner::SpawnEnemy()
 	{
 		return;
 	}
+	// Stop spawning if the game has ended
+	if (AAdventureGameMode* GM = Cast<AAdventureGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		if (GM->bGameEnded)
+		{
+			StopSpawning();
+			return;
+		}
+	}
+
 
 	// Clean up dead enemies and check count
 	const int32 AliveCount = CleanupAndGetAliveCount();
@@ -70,4 +82,9 @@ int32 AEnemySpawner::CleanupAndGetAliveCount()
 	});
 
 	return AliveEnemies.Num();
+}
+
+void AEnemySpawner::StopSpawning()
+{
+	GetWorldTimerManager().ClearTimer(SpawnTimerHandle);
 }

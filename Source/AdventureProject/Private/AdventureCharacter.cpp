@@ -2,6 +2,8 @@
 
 
 #include "AdventureCharacter.h"
+#include "AdventureGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "InventoryComponent.h"
 #include "EquippableToolDefinition.h"
 #include "EquippableToolBase.h"
@@ -150,10 +152,9 @@ void AAdventureCharacter::Move(const FInputActionValue& Value)
 
 void AAdventureCharacter::Look(const FInputActionValue& Value)
 {
-	const FVector2D LookAxisValue = Value.Get<FVector2D>();
-
 	if (Controller)
 	{
+		const FVector2D LookAxisValue = Value.Get<FVector2D>();
 		AddControllerYawInput(LookAxisValue.X);
 		AddControllerPitchInput(LookAxisValue.Y);
 	}
@@ -264,7 +265,7 @@ void AAdventureCharacter::GiveItem(UItemDefinition* ItemDefinition)
 FVector AAdventureCharacter::GetCameraTargetLocation()
 {
 	// The target position to return
-	FVector TargetPosition;
+	FVector TargetPosition = FVector::ZeroVector;
 
 	UWorld* const World = GetWorld();
 
@@ -289,10 +290,31 @@ FVector AAdventureCharacter::GetCameraTargetLocation()
 
 float AAdventureCharacter::TakeDamageWrapper(float DamageAmount, AActor* DamageCauser)
 {
+	if (CurrentHealth <= 0.f)
+	{
+		return 0.f;
+	}
+
 	CurrentHealth = FMath::Max(0.f, CurrentHealth - DamageAmount);
+
+	// Only notify GameMode for player character (not enemies)
+	if (DamageAmount > 0.f && IsPlayerControlled())
+	{
+		if (AAdventureGameMode* GM = Cast<AAdventureGameMode>(UGameplayStatics::GetGameMode(this)))
+		{
+			GM->NotifyPlayerHit();
+		}
+	}
 
 	if (CurrentHealth <= 0.f)
 	{
+		if (IsPlayerControlled())
+		{
+			if (AAdventureGameMode* GM = Cast<AAdventureGameMode>(UGameplayStatics::GetGameMode(this)))
+			{
+				GM->NotifyPlayerDeath();
+			}
+		}
 		OnDeath();
 	}
 

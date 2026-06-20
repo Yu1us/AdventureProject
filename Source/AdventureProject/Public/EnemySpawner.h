@@ -40,11 +40,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawner")
 	bool bAutoStart = true;
 
+	// Stop the spawn timer (called when game ends)
+	void StopSpawning();
+
 protected:
 	virtual void BeginPlay() override;
 
 	// Call to spawn one enemy (respects MaxEnemies)
-	UFUNCTION(BlueprintCallable, Category = "Spawner")
 	void SpawnEnemy();
 
 private:

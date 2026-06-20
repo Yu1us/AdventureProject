@@ -1,6 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "EnemyCharacter.h"
+#include "AdventureGameMode.h"
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -50,6 +49,10 @@ void AEnemyCharacter::BeginPlay()
 
 void AEnemyCharacter::OnDeath_Implementation()
 {
+	if (AAdventureGameMode* GM = Cast<AAdventureGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		GM->RegisterEnemyKill();
+	}
 	Destroy();
 }
 
