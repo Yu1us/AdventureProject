@@ -388,3 +388,6 @@ Build/
 # Unreal Engine local user settings
 *.VC.db
 *.VC.opendb
+
+# AI planning files
+.planning/

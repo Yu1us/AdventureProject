@@ -15,13 +15,14 @@ This is an Unreal Engine 5.7 C++ project. The project descriptor is `AdventurePr
 
 Use the Unreal Engine version associated with the project (`5.7`).
 
-- Open locally: `UnrealEditor.exe AdventureProject.uproject`
+- Unreal Engine install path: `D:\Program\Epic\UE_5.7`
+- Open locally: `D:\Program\Epic\UE_5.7\Engine\Binaries\Win64\UnrealEditor.exe AdventureProject.uproject`
 - Build editor target:
-  `Engine\Build\BatchFiles\Build.bat AdventureProjectEditor Win64 Development -Project="%CD%\AdventureProject.uproject" -WaitMutex -FromMsBuild`
+  `& 'D:\Program\Epic\UE_5.7\Engine\Build\BatchFiles\Build.bat' AdventureProjectEditor Win64 Development -Project="D:\Project\FirstPD\AdventureProject\AdventureProject.uproject" -WaitMutex -FromMsBuild`
 - Build game target:
-  `Engine\Build\BatchFiles\Build.bat AdventureProject Win64 Development -Project="%CD%\AdventureProject.uproject" -WaitMutex`
+  `& 'D:\Program\Epic\UE_5.7\Engine\Build\BatchFiles\Build.bat' AdventureProject Win64 Development -Project="D:\Project\FirstPD\AdventureProject\AdventureProject.uproject" -WaitMutex`
 - Run automation tests, once tests exist:
-  `UnrealEditor-Cmd.exe AdventureProject.uproject -ExecCmds="Automation RunTests AdventureProject; Quit" -unattended -nop4 -NullRHI`
+  `& 'D:\Program\Epic\UE_5.7\Engine\Binaries\Win64\UnrealEditor-Cmd.exe' "D:\Project\FirstPD\AdventureProject\AdventureProject.uproject" -ExecCmds="Automation RunTests AdventureProject; Quit" -unattended -nop4 -NullRHI`
 
 ## Coding Style & Naming Conventions
 
