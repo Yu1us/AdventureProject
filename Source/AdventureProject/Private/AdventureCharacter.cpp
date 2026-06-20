@@ -7,6 +7,7 @@
 #include "InventoryComponent.h"
 #include "EquippableToolDefinition.h"
 #include "EquippableToolBase.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AAdventureCharacter::AAdventureCharacter()
@@ -53,6 +54,14 @@ AAdventureCharacter::AAdventureCharacter()
 	FirstPersonCameraComponent->FirstPersonScale = FirstPersonScale;
 
 	CurrentHealth = MaxHealth;
+	bReplicates = true;
+}
+
+void AAdventureCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AAdventureCharacter, CurrentHealth);
 }
 
 // Called when the game starts or when spawned
@@ -290,15 +299,18 @@ FVector AAdventureCharacter::GetCameraTargetLocation()
 
 float AAdventureCharacter::TakeDamageWrapper(float DamageAmount, AActor* DamageCauser)
 {
-	if (CurrentHealth <= 0.f)
+	if (!HasAuthority() || CurrentHealth <= 0.f || DamageAmount <= 0.f)
 	{
 		return 0.f;
 	}
 
+	const float PreviousHealth = CurrentHealth;
 	CurrentHealth = FMath::Max(0.f, CurrentHealth - DamageAmount);
+	const float ActualDamage = PreviousHealth - CurrentHealth;
+	ShowHealthDebug();
 
 	// Only notify GameMode for player character (not enemies)
-	if (DamageAmount > 0.f && IsPlayerControlled())
+	if (ActualDamage > 0.f && IsPlayerControlled())
 	{
 		if (AAdventureGameMode* GM = Cast<AAdventureGameMode>(UGameplayStatics::GetGameMode(this)))
 		{
@@ -318,10 +330,26 @@ float AAdventureCharacter::TakeDamageWrapper(float DamageAmount, AActor* DamageC
 		OnDeath();
 	}
 
-	return DamageAmount;
+	return ActualDamage;
 }
 
 void AAdventureCharacter::OnDeath_Implementation()
 {
 	// Default: do nothing. EnemyCharacter overrides this to Destroy().
+}
+
+void AAdventureCharacter::OnRep_CurrentHealth()
+{
+	ShowHealthDebug();
+}
+
+void AAdventureCharacter::ShowHealthDebug() const
+{
+	const FString Message = FString::Printf(TEXT("%s Health: %.0f / %.0f"), *GetNameSafe(this), CurrentHealth, MaxHealth);
+	UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, Message);
+	}
 }

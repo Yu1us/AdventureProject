@@ -1,0 +1,56 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/GameStateBase.h"
+#include "AdventureGameState.generated.h"
+
+UENUM(BlueprintType)
+enum class EAdventureMatchResult : uint8
+{
+	InProgress,
+	Victory,
+	Defeat
+};
+
+UCLASS()
+class ADVENTUREPROJECT_API AAdventureGameState : public AGameStateBase
+{
+	GENERATED_BODY()
+
+public:
+	AAdventureGameState();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_KillTarget, Category = "Game")
+	int32 KillTarget = 10;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_CurrentStreak, Category = "Game")
+	int32 CurrentStreak = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_GameEnded, Category = "Game")
+	bool bGameEnded = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_MatchResult, Category = "Game")
+	EAdventureMatchResult MatchResult = EAdventureMatchResult::InProgress;
+
+	void SetMatchState(int32 InKillTarget, int32 InCurrentStreak, bool bInGameEnded, EAdventureMatchResult InMatchResult);
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+private:
+	UFUNCTION()
+	void OnRep_KillTarget();
+
+	UFUNCTION()
+	void OnRep_CurrentStreak();
+
+	UFUNCTION()
+	void OnRep_GameEnded();
+
+	UFUNCTION()
+	void OnRep_MatchResult();
+
+	void ShowComboDebug() const;
+	void ShowResultDebug() const;
+};

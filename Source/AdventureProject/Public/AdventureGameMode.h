@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AdventureGameState.h"
 #include "GameFramework/GameModeBase.h"
 #include "AdventureGameMode.generated.h"
 
@@ -15,6 +16,8 @@ class ADVENTUREPROJECT_API AAdventureGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+	AAdventureGameMode();
+
 	// Target combo kills to win (configurable in editor)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game")
 	int32 KillTarget = 10;
@@ -43,6 +46,7 @@ protected:
 	virtual void StartPlay() override;
 
 private:
+	void SyncGameState(EAdventureMatchResult MatchResult);
 	void TriggerVictory();
 	void TriggerDefeat();
 	void StopAllSpawners();

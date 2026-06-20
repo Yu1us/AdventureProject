@@ -44,7 +44,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float MaxHealth = 100.0f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_CurrentHealth, Category = "Health")
 	float CurrentHealth;
 
 	// Take damage entry point. Returns actual damage dealt.
@@ -85,6 +85,8 @@ protected:
 	TObjectPtr<UInputAction> UseAction;
 
 public:	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -138,4 +140,10 @@ public:
 	// Public function that other classes can call to attempt to give an item to the player
 	UFUNCTION()
 	void GiveItem(UItemDefinition* ItemDefinition);
+
+private:
+	UFUNCTION()
+	void OnRep_CurrentHealth();
+
+	void ShowHealthDebug() const;
 };
