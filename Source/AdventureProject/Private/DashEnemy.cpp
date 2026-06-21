@@ -76,12 +76,10 @@ void ADashEnemy::TickTracking(float DeltaTime)
 
 void ADashEnemy::TickWindUp(float DeltaTime)
 {
-	// Red warning line from enemy toward locked dash direction
+	// Attack telegraph for the dash path.
 	const FVector Start = GetActorLocation();
 	const FVector End = Start + DashDirection * DashRange;
 	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, -1.0f, 0, 3.0f);
-
-	// Red tint pulsing (scale emissive via debug sphere)
 	DrawDebugSphere(GetWorld(), Start + FVector(0, 0, 50), 30.0f, 8, FColor::Red, false, -1.0f);
 
 	StateTimer -= DeltaTime;

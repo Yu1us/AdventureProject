@@ -24,7 +24,7 @@ public:
 
 	// Damage dealt to characters on hit
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile | Damage")
-	float ProjectileDamage = 25.0f;
+	float ProjectileDamage = 50.0f;
 
 	// If enabled, the projectile must bounce before it can damage characters.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile | Damage")

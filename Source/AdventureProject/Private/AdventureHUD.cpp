@@ -23,25 +23,79 @@ void AAdventureHUD::DrawHUD()
 	const AAdventurePlayerState* AdventurePlayerState = OwningController ? OwningController->GetPlayerState<AAdventurePlayerState>() : nullptr;
 	const AAdventureGameState* AdventureGameState = GetWorld() ? GetWorld()->GetGameState<AAdventureGameState>() : nullptr;
 
+	UpdateDamageFeedback(AdventureCharacter);
+
 	DrawCrosshair();
 	DrawStatusPanel(AdventureCharacter, AdventureGameState, AdventurePlayerState);
 	DrawResultBanner(AdventureGameState);
+	DrawDamageFeedback();
+}
+
+void AAdventureHUD::UpdateDamageFeedback(const AAdventureCharacter* Character)
+{
+	if (Character == nullptr)
+	{
+		LastObservedCharacter.Reset();
+		LastObservedHealth = -1.0f;
+		return;
+	}
+
+	if (LastObservedCharacter.Get() != Character)
+	{
+		LastObservedCharacter = Character;
+		LastObservedHealth = Character->CurrentHealth;
+		return;
+	}
+
+	if (LastObservedHealth >= 0.0f && Character->CurrentHealth < LastObservedHealth - KINDA_SMALL_NUMBER)
+	{
+		if (const UWorld* World = GetWorld())
+		{
+			DamageFeedbackEndTime = World->GetTimeSeconds() + 0.35f;
+		}
+	}
+
+	LastObservedHealth = Character->CurrentHealth;
+}
+
+void AAdventureHUD::DrawDamageFeedback()
+{
+	const UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	constexpr float FeedbackDuration = 0.35f;
+	const float RemainingTime = DamageFeedbackEndTime - World->GetTimeSeconds();
+	if (RemainingTime <= 0.0f)
+	{
+		return;
+	}
+
+	const float Alpha = FMath::Clamp(RemainingTime / FeedbackDuration, 0.0f, 1.0f);
+	DrawRect(FLinearColor(0.85f, 0.02f, 0.0f, 0.22f * Alpha), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
 }
 
 void AAdventureHUD::DrawCrosshair()
 {
 	const float CenterX = Canvas->ClipX * 0.5f;
 	const float CenterY = Canvas->ClipY * 0.5f;
-	const FLinearColor CrosshairColor(0.95f, 0.95f, 0.9f, 0.9f);
-	const float Gap = 5.0f;
-	const float Arm = 12.0f;
-	const float Thickness = 1.5f;
+	const FLinearColor ShadowColor(0.0f, 0.0f, 0.0f, 0.65f);
+	const FLinearColor CrosshairColor(0.98f, 0.96f, 0.86f, 0.95f);
+	const float Radius = 3.5f;
 
-	DrawLine(CenterX - Gap - Arm, CenterY, CenterX - Gap, CenterY, CrosshairColor, Thickness);
-	DrawLine(CenterX + Gap, CenterY, CenterX + Gap + Arm, CenterY, CrosshairColor, Thickness);
-	DrawLine(CenterX, CenterY - Gap - Arm, CenterX, CenterY - Gap, CrosshairColor, Thickness);
-	DrawLine(CenterX, CenterY + Gap, CenterX, CenterY + Gap + Arm, CrosshairColor, Thickness);
-	DrawRect(CrosshairColor, CenterX - 1.0f, CenterY - 1.0f, 2.0f, 2.0f);
+	for (int32 OffsetY = -4; OffsetY <= 4; ++OffsetY)
+	{
+		const float HalfWidth = FMath::Sqrt(FMath::Max(0.0f, (Radius + 1.0f) * (Radius + 1.0f) - static_cast<float>(OffsetY * OffsetY)));
+		DrawLine(CenterX - HalfWidth, CenterY + OffsetY, CenterX + HalfWidth, CenterY + OffsetY, ShadowColor, 1.0f);
+	}
+
+	for (int32 OffsetY = -3; OffsetY <= 3; ++OffsetY)
+	{
+		const float HalfWidth = FMath::Sqrt(FMath::Max(0.0f, Radius * Radius - static_cast<float>(OffsetY * OffsetY)));
+		DrawLine(CenterX - HalfWidth, CenterY + OffsetY, CenterX + HalfWidth, CenterY + OffsetY, CrosshairColor, 1.0f);
+	}
 }
 
 void AAdventureHUD::DrawStatusPanel(const AAdventureCharacter* Character, const AAdventureGameState* AdventureGameState, const AAdventurePlayerState* AdventurePlayerState)
@@ -49,7 +103,7 @@ void AAdventureHUD::DrawStatusPanel(const AAdventureCharacter* Character, const 
 	const float X = 24.0f;
 	const float Y = 24.0f;
 	const float Width = 440.0f;
-	const float Height = 212.0f;
+	const float Height = 224.0f;
 	float CursorY = Y + 14.0f;
 
 	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.45f), X, Y, Width, Height);

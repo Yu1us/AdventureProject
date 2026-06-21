@@ -32,7 +32,7 @@ public:
 	TSubclassOf<AProjectileBase> ProjectileClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Projectile")
-	float FireInterval = 0.5f;
+	float FireInterval = 0.3f;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category = "Projectile")
 	float NextServerFireTime = 0.0f;

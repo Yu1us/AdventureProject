@@ -106,7 +106,7 @@ void ARaycastEnemy::TickCharging(float DeltaTime)
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), FlatToPlayer.Rotation(), DeltaTime, 10.0f));
 	}
 
-	// Draw red warning laser from enemy to player
+	// Attack telegraph while the raycast shot charges.
 	const FVector Start = MyLocation + FVector(0.0f, 0.0f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 	DrawDebugLine(GetWorld(), Start, PlayerLocation, FColor::Red, false, -1.0f, 0, 3.0f);
 
@@ -133,7 +133,6 @@ void ARaycastEnemy::TickFiring(float DeltaTime)
 
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
 
-	// Draw the fired beam briefly (debug visualization)
 	DrawDebugLine(GetWorld(), Start, bHit ? Hit.ImpactPoint : End, FColor::Yellow, false, 0.5f, 0, 2.0f);
 
 	if (bHit)
