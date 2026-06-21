@@ -83,7 +83,7 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 			return;
 		}
 
-		if (bHasBounced)
+		if (!bRequireBounceBeforeDamage || bHasBounced)
 		{
 			HitCharacter->TakeDamageWrapper(ProjectileDamage, this);
 		}

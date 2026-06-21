@@ -1,6 +1,7 @@
 #include "AdventureGameMode.h"
 #include "AdventureCharacter.h"
 #include "EnemySpawner.h"
+#include "AdventureHUD.h"
 #include "AdventurePlayerState.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -8,6 +9,7 @@ AAdventureGameMode::AAdventureGameMode()
 {
 	GameStateClass = AAdventureGameState::StaticClass();
 	PlayerStateClass = AAdventurePlayerState::StaticClass();
+	HUDClass = AAdventureHUD::StaticClass();
 }
 
 void AAdventureGameMode::StartPlay()

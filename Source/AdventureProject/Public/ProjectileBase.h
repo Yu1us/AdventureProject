@@ -26,6 +26,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile | Damage")
 	float ProjectileDamage = 25.0f;
 
+	// If enabled, the projectile must bounce before it can damage characters.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile | Damage")
+	bool bRequireBounceBeforeDamage = false;
+
 	// Called when the projectile collides with an object
 
 	UFUNCTION()
