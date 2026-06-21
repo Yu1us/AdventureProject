@@ -24,10 +24,13 @@ void AAdventureHUD::DrawHUD()
 	const AAdventureGameState* AdventureGameState = GetWorld() ? GetWorld()->GetGameState<AAdventureGameState>() : nullptr;
 
 	UpdateDamageFeedback(AdventureCharacter);
+	UpdateResultBanner(AdventureGameState);
+	UpdatePlayerKillMessage(AdventurePlayerState);
 
 	DrawCrosshair();
 	DrawStatusPanel(AdventureCharacter, AdventureGameState, AdventurePlayerState);
 	DrawResultBanner(AdventureGameState);
+	DrawPlayerKillMessage();
 	DrawDamageFeedback();
 }
 
@@ -75,6 +78,85 @@ void AAdventureHUD::DrawDamageFeedback()
 
 	const float Alpha = FMath::Clamp(RemainingTime / FeedbackDuration, 0.0f, 1.0f);
 	DrawRect(FLinearColor(0.85f, 0.02f, 0.0f, 0.22f * Alpha), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
+}
+
+void AAdventureHUD::UpdateResultBanner(const AAdventureGameState* AdventureGameState)
+{
+	if (AdventureGameState == nullptr || !AdventureGameState->bGameEnded)
+	{
+		bObservedGameEnded = false;
+		ResultBannerEndTime = 0.0f;
+		return;
+	}
+
+	const bool bResultChanged = !bObservedGameEnded
+		|| LastObservedMatchResult != AdventureGameState->MatchResult
+		|| LastObservedKillTarget != AdventureGameState->KillTarget
+		|| LastObservedWinnerPlayerName != AdventureGameState->WinnerPlayerName;
+
+	if (!bResultChanged)
+	{
+		return;
+	}
+
+	bObservedGameEnded = true;
+	LastObservedMatchResult = AdventureGameState->MatchResult;
+	LastObservedKillTarget = AdventureGameState->KillTarget;
+	LastObservedWinnerPlayerName = AdventureGameState->WinnerPlayerName;
+
+	if (const UWorld* World = GetWorld())
+	{
+		ResultBannerEndTime = World->GetTimeSeconds() + ResultBannerDisplayDuration;
+	}
+}
+
+void AAdventureHUD::UpdatePlayerKillMessage(const AAdventurePlayerState* AdventurePlayerState)
+{
+	if (AdventurePlayerState == nullptr)
+	{
+		LastObservedPlayerState.Reset();
+		LastObservedPlayerKills = INDEX_NONE;
+		LastObservedNpcKills = INDEX_NONE;
+		PlayerKillMessageEndTime = 0.0f;
+		return;
+	}
+
+	if (LastObservedPlayerState.Get() != AdventurePlayerState)
+	{
+		LastObservedPlayerState = AdventurePlayerState;
+		LastObservedPlayerKills = AdventurePlayerState->PlayerKills;
+		LastObservedNpcKills = AdventurePlayerState->NpcKills;
+		return;
+	}
+
+	const int32 PlayerKillDelta = LastObservedPlayerKills == INDEX_NONE ? 0 : AdventurePlayerState->PlayerKills - LastObservedPlayerKills;
+	const int32 NpcKillDelta = LastObservedNpcKills == INDEX_NONE ? 0 : AdventurePlayerState->NpcKills - LastObservedNpcKills;
+
+	LastObservedPlayerKills = AdventurePlayerState->PlayerKills;
+	LastObservedNpcKills = AdventurePlayerState->NpcKills;
+
+	if (PlayerKillDelta <= 0 && NpcKillDelta <= 0)
+	{
+		return;
+	}
+
+	if (PlayerKillDelta > 0 && NpcKillDelta > 0)
+	{
+		PlayerKillMessage = FString::Printf(TEXT("Kills +%d PvP  +%d NPC"), PlayerKillDelta, NpcKillDelta);
+	}
+	else if (PlayerKillDelta > 0)
+	{
+		PlayerKillMessage = FString::Printf(TEXT("PvP Elimination +%d"), PlayerKillDelta);
+	}
+	else
+	{
+		PlayerKillMessage = FString::Printf(TEXT("NPC Kill +%d"), NpcKillDelta);
+	}
+
+	if (const UWorld* World = GetWorld())
+	{
+		PlayerKillMessageEndTime = World->GetTimeSeconds() + PlayerKillMessageDisplayDuration;
+	}
 }
 
 void AAdventureHUD::DrawCrosshair()
@@ -159,9 +241,7 @@ void AAdventureHUD::DrawStatusPanel(const AAdventureCharacter* Character, const 
 	{
 		DrawLineText(
 			FString::Printf(
-				TEXT("You: PvP K %d  NPC K %d  D %d  Damage %.0f  Best NPC Combo %d"),
-				AdventurePlayerState->PlayerKills,
-				AdventurePlayerState->NpcKills,
+				TEXT("You: D %d  Damage %.0f  Best NPC Combo %d"),
 				AdventurePlayerState->Deaths,
 				AdventurePlayerState->DamageTaken,
 				AdventurePlayerState->BestCombo),
@@ -204,6 +284,12 @@ void AAdventureHUD::DrawResultBanner(const AAdventureGameState* AdventureGameSta
 		return;
 	}
 
+	const UWorld* World = GetWorld();
+	if (World == nullptr || World->GetTimeSeconds() >= ResultBannerEndTime)
+	{
+		return;
+	}
+
 	FString ResultText;
 	FLinearColor ResultColor = FLinearColor::White;
 
@@ -230,6 +316,35 @@ void AAdventureHUD::DrawResultBanner(const AAdventureGameState* AdventureGameSta
 
 	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.65f), BannerX, BannerY, BannerWidth, BannerHeight);
 	DrawText(ResultText, ResultColor, BannerX + 28.0f, BannerY + 19.0f, nullptr, 1.6f, false);
+}
+
+void AAdventureHUD::DrawPlayerKillMessage()
+{
+	if (PlayerKillMessage.IsEmpty())
+	{
+		return;
+	}
+
+	const UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	const float RemainingTime = PlayerKillMessageEndTime - World->GetTimeSeconds();
+	if (RemainingTime <= 0.0f)
+	{
+		return;
+	}
+
+	const float Alpha = FMath::Clamp(RemainingTime / FMath::Max(PlayerKillMessageDisplayDuration, KINDA_SMALL_NUMBER), 0.0f, 1.0f);
+	const float MessageWidth = 360.0f;
+	const float MessageHeight = 48.0f;
+	const float MessageX = (Canvas->ClipX - MessageWidth) * 0.5f;
+	const float MessageY = Canvas->ClipY * 0.32f;
+
+	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.55f * Alpha), MessageX, MessageY, MessageWidth, MessageHeight);
+	DrawText(PlayerKillMessage, FLinearColor(1.0f, 0.9f, 0.35f, Alpha), MessageX + 22.0f, MessageY + 13.0f, nullptr, 1.2f, false);
 }
 
 void AAdventureHUD::DrawBar(float X, float Y, float Width, float Height, float Percent, const FLinearColor& FillColor, const FString& Label)
