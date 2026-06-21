@@ -63,6 +63,7 @@ void AAdventureCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	DOREPLIFETIME(AAdventureCharacter, CurrentHealth);
 	DOREPLIFETIME(AAdventureCharacter, bIsDead);
+	DOREPLIFETIME(AAdventureCharacter, EquippedTool);
 }
 
 // Called when the game starts or when spawned
@@ -189,6 +190,12 @@ void AAdventureCharacter::AttachTool(UEquippableToolDefinition* ToolDefinition)
 	{
 		// Spawn a new instance of the tool to equip
 		AEquippableToolBase* ToolToEquip = GetWorld()->SpawnActor<AEquippableToolBase>(ToolDefinition->ToolAsset, this->GetActorTransform());
+		if (ToolToEquip == nullptr)
+		{
+			return;
+		}
+
+		ToolToEquip->SetOwner(this);
 
 		// Attach the tool to the First Person Character
 		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);

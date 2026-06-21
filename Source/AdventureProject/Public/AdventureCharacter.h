@@ -89,7 +89,7 @@ protected:
 	TObjectPtr<UInputAction> LookAction;
 
 	// The currently-equipped tool
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Tools")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category = "Tools")
 	TObjectPtr<AEquippableToolBase> EquippedTool;
 
 	// Use Input Actions
@@ -141,6 +141,9 @@ public:
 	// Attaches and equips a tool to the player
 	UFUNCTION()
 	void AttachTool(UEquippableToolDefinition* ToolDefinition);
+
+	UFUNCTION(BlueprintPure, Category = "Tools")
+	AEquippableToolBase* GetEquippedTool() const { return EquippedTool; }
 
 	// Requests the server to use the currently-equipped tool.
 	UFUNCTION(Server, Reliable)

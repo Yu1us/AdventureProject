@@ -25,6 +25,7 @@ protected:
 private:
 	void DrawCrosshair();
 	void DrawStatusPanel(const AAdventureCharacter* Character, const AAdventureGameState* AdventureGameState, const AAdventurePlayerState* AdventurePlayerState);
+	void DrawToolRateLimit(const AAdventureCharacter* Character, float X, float& Y);
 	void DrawResultBanner(const AAdventureGameState* AdventureGameState);
 	void DrawBar(float X, float Y, float Width, float Height, float Percent, const FLinearColor& FillColor, const FString& Label);
 	void DrawLineText(const FString& Text, const FLinearColor& Color, float X, float& Y, float Scale = 1.0f);

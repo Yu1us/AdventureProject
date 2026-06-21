@@ -3,6 +3,7 @@
 #include "AdventureHUD.h"
 
 #include "AdventureCharacter.h"
+#include "EquippableToolBase.h"
 #include "AdventureGameState.h"
 #include "AdventurePlayerState.h"
 #include "Engine/Canvas.h"
@@ -48,7 +49,7 @@ void AAdventureHUD::DrawStatusPanel(const AAdventureCharacter* Character, const 
 	const float X = 24.0f;
 	const float Y = 24.0f;
 	const float Width = 440.0f;
-	const float Height = 190.0f;
+	const float Height = 212.0f;
 	float CursorY = Y + 14.0f;
 
 	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.45f), X, Y, Width, Height);
@@ -73,6 +74,8 @@ void AAdventureHUD::DrawStatusPanel(const AAdventureCharacter* Character, const 
 		{
 			DrawLineText(TEXT("Status: Down - respawning..."), FLinearColor(1.0f, 0.35f, 0.25f, 1.0f), X + 18.0f, CursorY);
 		}
+
+		DrawToolRateLimit(Character, X + 18.0f, CursorY);
 	}
 	else
 	{
@@ -109,6 +112,32 @@ void AAdventureHUD::DrawStatusPanel(const AAdventureCharacter* Character, const 
 			X + 18.0f,
 			CursorY);
 	}
+}
+
+void AAdventureHUD::DrawToolRateLimit(const AAdventureCharacter* Character, float X, float& Y)
+{
+	const AEquippableToolBase* EquippedTool = Character != nullptr ? Character->GetEquippedTool() : nullptr;
+	if (EquippedTool == nullptr)
+	{
+		DrawLineText(TEXT("Server Fire Limit: no tool"), FLinearColor(0.7f, 0.72f, 0.75f, 1.0f), X, Y, 0.88f);
+		return;
+	}
+
+	float FireInterval = 0.0f;
+	float CooldownRemaining = 0.0f;
+	if (!EquippedTool->GetServerUseRateLimit(FireInterval, CooldownRemaining))
+	{
+		DrawLineText(TEXT("Server Fire Limit: none"), FLinearColor(0.7f, 0.72f, 0.75f, 1.0f), X, Y, 0.88f);
+		return;
+	}
+
+	const float ShotsPerSecond = FireInterval > 0.0f ? 1.0f / FireInterval : 0.0f;
+	DrawLineText(
+		FString::Printf(TEXT("Server Fire Limit: %.1f/s  Cooldown: %.2fs"), ShotsPerSecond, CooldownRemaining),
+		CooldownRemaining > 0.0f ? FLinearColor(1.0f, 0.82f, 0.35f, 1.0f) : FLinearColor(0.75f, 1.0f, 0.75f, 1.0f),
+		X,
+		Y,
+		0.88f);
 }
 
 void AAdventureHUD::DrawResultBanner(const AAdventureGameState* AdventureGameState)

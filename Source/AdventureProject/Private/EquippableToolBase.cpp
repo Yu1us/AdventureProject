@@ -10,6 +10,8 @@
 AEquippableToolBase::AEquippableToolBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
+	SetReplicateMovement(false);
 
 	// Create this tool's mesh component
 	ToolMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ToolMesh"));
@@ -42,4 +44,11 @@ void AEquippableToolBase::UseAtTarget(FVector)
 
 void AEquippableToolBase::BindInputAction(const UInputAction* ActionToBind)
 {
+}
+
+bool AEquippableToolBase::GetServerUseRateLimit(float& OutUseInterval, float& OutCooldownRemaining) const
+{
+	OutUseInterval = 0.0f;
+	OutCooldownRemaining = 0.0f;
+	return false;
 }

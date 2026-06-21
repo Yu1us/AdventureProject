@@ -21,15 +21,19 @@ public:
 
 	virtual void BindInputAction(const UInputAction* InputToBind) override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual bool GetServerUseRateLimit(float& OutUseInterval, float& OutCooldownRemaining) const override;
+
 	bool ShouldRequestServerUse() const;
 
 	// Projectile class to spawn
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	TSubclassOf<AProjectileBase> ProjectileClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Projectile")
 	float FireInterval = 0.5f;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Projectile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category = "Projectile")
 	float NextServerFireTime = 0.0f;
 };

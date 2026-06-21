@@ -54,6 +54,9 @@ public:
 	UFUNCTION()
 	virtual void BindInputAction(const UInputAction* ActionToBind);
 
+	// Returns server-side rate limit details for HUD display when this tool has one.
+	virtual bool GetServerUseRateLimit(float& OutUseInterval, float& OutCooldownRemaining) const;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -6,6 +6,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "EnhancedInputComponent.h" 
 #include "AdventureCharacter.h"
+#include "GameFramework/GameStateBase.h"
+#include "Net/UnrealNetwork.h"
 
 void ADartLauncher::Use()
 {
@@ -72,6 +74,30 @@ void ADartLauncher::UseAtTarget(FVector TargetPosition)
 bool ADartLauncher::ShouldRequestServerUse() const
 {
 	return OwningCharacter != nullptr && !OwningCharacter->HasAuthority();
+}
+
+void ADartLauncher::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ADartLauncher, FireInterval);
+	DOREPLIFETIME(ADartLauncher, NextServerFireTime);
+}
+
+bool ADartLauncher::GetServerUseRateLimit(float& OutUseInterval, float& OutCooldownRemaining) const
+{
+	OutUseInterval = FMath::Max(0.0f, FireInterval);
+	OutCooldownRemaining = 0.0f;
+
+	const UWorld* World = GetWorld();
+	if (World != nullptr)
+	{
+		const AGameStateBase* GameState = World->GetGameState();
+		const float ServerNow = GameState != nullptr ? GameState->GetServerWorldTimeSeconds() : World->GetTimeSeconds();
+		OutCooldownRemaining = FMath::Max(0.0f, NextServerFireTime - ServerNow);
+	}
+
+	return OutUseInterval > 0.0f;
 }
 
 void ADartLauncher::BindInputAction(const UInputAction* InputToBind)
