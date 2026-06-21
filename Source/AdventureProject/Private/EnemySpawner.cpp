@@ -4,7 +4,6 @@
 #include "EnemyCharacter.h"
 #include "AdventureGameMode.h"
 #include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
 
 AEnemySpawner::AEnemySpawner()
 {
@@ -17,9 +16,6 @@ AEnemySpawner::AEnemySpawner()
 void AEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Show where the spawner is in the world
-	DrawDebugSphere(GetWorld(), GetActorLocation(), 50.0f, 12, FColor::Green, true, -1.0f, 0, 2.0f);
 
 	if (bAutoStart)
 	{

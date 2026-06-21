@@ -68,9 +68,4 @@ void AAdventurePlayerState::ShowStatsDebug() const
 		BestCombo);
 
 	UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
-
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, Message);
-	}
 }

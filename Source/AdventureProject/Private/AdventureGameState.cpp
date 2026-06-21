@@ -58,11 +58,6 @@ void AAdventureGameState::ShowComboDebug() const
 {
 	const FString Message = FString::Printf(TEXT("Team Kills: %d / %d | Team Combo: %d"), TeamKills, KillTarget, CurrentStreak);
 	UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
-
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, Message);
-	}
 }
 
 void AAdventureGameState::ShowResultDebug() const
@@ -73,28 +68,20 @@ void AAdventureGameState::ShowResultDebug() const
 	}
 
 	FString Message;
-	FColor Color = FColor::White;
 
 	switch (MatchResult)
 	{
 	case EAdventureMatchResult::Victory:
 		Message = FString::Printf(TEXT("=== VICTORY! Team reached %d kills! ==="), KillTarget);
-		Color = FColor::Green;
 		break;
 	case EAdventureMatchResult::Defeat:
 		Message = TEXT("=== DEFEAT! Player died. ===");
-		Color = FColor::Red;
 		break;
 	default:
 		return;
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
-
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 30.0f, Color, Message);
-	}
 
 	ShowScoreboardDebug();
 }
@@ -114,11 +101,6 @@ void AAdventureGameState::ShowScoreboardDebug() const
 				AdventurePlayerState->BestCombo);
 
 			UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
-
-			if (GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Yellow, Message);
-			}
 		}
 	}
 }

@@ -128,7 +128,7 @@ void APickupBase::InitializePickup()
 // Sets the pickup to invisible and uninteractable, and respawns it after a set time.
 void APickupBase::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Attempting a pickup collision"));
+	UE_LOG(LogTemp, Verbose, TEXT("Attempting a pickup collision"));
 
 	// Checking if it's an AdventureCharacter overlapping
 	AAdventureCharacter* Character = Cast<AAdventureCharacter>(OtherActor);

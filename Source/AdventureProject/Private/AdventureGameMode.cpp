@@ -16,10 +16,7 @@ void AAdventureGameMode::StartPlay()
 {
 	Super::StartPlay();
 
-	check(GEngine != nullptr);
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow,
-		FString::Printf(TEXT("PvPvE Challenge: Reach %d enemy kills while fighting players!"), KillTarget));
+	UE_LOG(LogTemp, Log, TEXT("PvPvE Challenge: Reach %d enemy kills while fighting players!"), KillTarget);
 	UE_LOG(LogTemp, Warning, TEXT("AdventureGameMode: KillTarget = %d"), KillTarget);
 
 	SyncGameState(EAdventureMatchResult::InProgress);
@@ -45,8 +42,7 @@ void AAdventureGameMode::RegisterEnemyKillForController(AController* KillerContr
 		KillerState->AddKill();
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan,
-		FString::Printf(TEXT("Team Kills: %d / %d | Team Combo: %d"), TeamKills, KillTarget, CurrentStreak));
+	UE_LOG(LogTemp, Log, TEXT("Team Kills: %d / %d | Team Combo: %d"), TeamKills, KillTarget, CurrentStreak);
 
 	if (TeamKills >= KillTarget)
 	{
@@ -76,8 +72,7 @@ void AAdventureGameMode::NotifyPlayerDamaged(AController* DamagedController, flo
 
 	if (CurrentStreak > 0)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red,
-			FString::Printf(TEXT("Combo broken! (%d reset to 0)"), CurrentStreak));
+		UE_LOG(LogTemp, Log, TEXT("Combo broken! (%d reset to 0)"), CurrentStreak);
 		CurrentStreak = 0;
 		SyncGameState(EAdventureMatchResult::InProgress);
 	}
@@ -107,10 +102,9 @@ void AAdventureGameMode::NotifyPlayerDeathForController(AController* DeadControl
 			KillerState->AddKill();
 			const FString DeadPlayerName = DeadController && DeadController->PlayerState ? DeadController->PlayerState->GetPlayerName() : TEXT("Player");
 
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange,
-				FString::Printf(TEXT("PvP Elimination: %s defeated %s"),
-					*KillerState->GetPlayerName(),
-					*DeadPlayerName));
+			UE_LOG(LogTemp, Log, TEXT("PvP Elimination: %s defeated %s"),
+				*KillerState->GetPlayerName(),
+				*DeadPlayerName);
 		}
 	}
 
@@ -131,8 +125,6 @@ void AAdventureGameMode::TriggerVictory()
 	bGameEnded = true;
 	SyncGameState(EAdventureMatchResult::Victory);
 
-	GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Green,
-		FString::Printf(TEXT("=== VICTORY! Team reached %d kills! ==="), KillTarget));
 	UE_LOG(LogTemp, Warning, TEXT("VICTORY! Team reached %d kills."), KillTarget);
 
 	StopAllSpawners();
@@ -143,8 +135,6 @@ void AAdventureGameMode::TriggerDefeat()
 	bGameEnded = true;
 	SyncGameState(EAdventureMatchResult::Defeat);
 
-	GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red,
-		TEXT("=== DEFEAT! Player died. ==="));
 	UE_LOG(LogTemp, Warning, TEXT("DEFEAT! Player died."));
 
 	StopAllSpawners();

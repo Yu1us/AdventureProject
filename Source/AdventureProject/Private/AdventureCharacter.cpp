@@ -71,8 +71,6 @@ void AAdventureCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	check(GEngine != nullptr);
-
 	if (HasAuthority())
 	{
 		CurrentHealth = MaxHealth;
@@ -119,8 +117,7 @@ void AAdventureCharacter::BeginPlay()
 		}
 	}
 
-	// Display a debug message for five seconds. 
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using AdventureCharacter."));
+	UE_LOG(LogTemp, Log, TEXT("We are using AdventureCharacter."));
 }
 
 // Called to bind functionality to input
@@ -431,8 +428,4 @@ void AAdventureCharacter::ShowHealthDebug() const
 	const FString Message = FString::Printf(TEXT("%s Health: %.0f / %.0f"), *GetNameSafe(this), CurrentHealth, MaxHealth);
 	UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
 
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, Message);
-	}
 }
