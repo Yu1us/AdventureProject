@@ -25,19 +25,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_KillTarget, Category = "Game")
 	int32 KillTarget = 10;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_CurrentStreak, Category = "Game")
-	int32 CurrentStreak = 0;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_TeamKills, Category = "Game")
-	int32 TeamKills = 0;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_GameEnded, Category = "Game")
 	bool bGameEnded = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_MatchResult, Category = "Game")
 	EAdventureMatchResult MatchResult = EAdventureMatchResult::InProgress;
 
-	void SetMatchState(int32 InKillTarget, int32 InCurrentStreak, int32 InTeamKills, bool bInGameEnded, EAdventureMatchResult InMatchResult);
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_WinnerPlayerName, Category = "Game")
+	FString WinnerPlayerName;
+
+	void SetMatchState(int32 InKillTarget, bool bInGameEnded, EAdventureMatchResult InMatchResult, const FString& InWinnerPlayerName);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -46,18 +43,15 @@ private:
 	void OnRep_KillTarget();
 
 	UFUNCTION()
-	void OnRep_CurrentStreak();
-
-	UFUNCTION()
-	void OnRep_TeamKills();
-
-	UFUNCTION()
 	void OnRep_GameEnded();
 
 	UFUNCTION()
 	void OnRep_MatchResult();
 
-	void ShowComboDebug() const;
+	UFUNCTION()
+	void OnRep_WinnerPlayerName();
+
+	void ShowObjectiveDebug() const;
 	void ShowResultDebug() const;
 	void ShowScoreboardDebug() const;
 };

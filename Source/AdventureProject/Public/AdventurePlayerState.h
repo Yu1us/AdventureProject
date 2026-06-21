@@ -15,7 +15,10 @@ public:
 	AAdventurePlayerState();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_MatchStats, Category = "Match Stats")
-	int32 Kills = 0;
+	int32 PlayerKills = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_MatchStats, Category = "Match Stats")
+	int32 NpcKills = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_MatchStats, Category = "Match Stats")
 	int32 Deaths = 0;
@@ -29,7 +32,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_MatchStats, Category = "Match Stats")
 	int32 BestCombo = 0;
 
-	void AddKill();
+	void AddPlayerKill();
+	void AddNpcKill();
 	void AddDeath();
 	void AddDamageTaken(float DamageAmount);
 	void ResetCombo();

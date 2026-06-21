@@ -34,19 +34,24 @@ void AAdventureGameMode::RegisterEnemyKillForController(AController* KillerContr
 		return;
 	}
 
-	++CurrentStreak;
-	++TeamKills;
-
-	if (AAdventurePlayerState* KillerState = KillerController ? KillerController->GetPlayerState<AAdventurePlayerState>() : nullptr)
+	AAdventurePlayerState* KillerState = KillerController ? KillerController->GetPlayerState<AAdventurePlayerState>() : nullptr;
+	if (KillerState == nullptr)
 	{
-		KillerState->AddKill();
+		UE_LOG(LogTemp, Log, TEXT("NPC defeated without player kill credit."));
+		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("Team Kills: %d / %d | Team Combo: %d"), TeamKills, KillTarget, CurrentStreak);
+	KillerState->AddNpcKill();
 
-	if (TeamKills >= KillTarget)
+	UE_LOG(LogTemp, Log, TEXT("%s NPC Kills: %d / %d | NPC Combo: %d"),
+		*KillerState->GetPlayerName(),
+		KillerState->NpcKills,
+		KillTarget,
+		KillerState->CurrentCombo);
+
+	if (KillTarget > 0 && KillerState->NpcKills >= KillTarget)
 	{
-		TriggerVictory();
+		TriggerVictory(KillerState);
 		return;
 	}
 
@@ -67,15 +72,18 @@ void AAdventureGameMode::NotifyPlayerDamaged(AController* DamagedController, flo
 
 	if (AAdventurePlayerState* DamagedState = DamagedController ? DamagedController->GetPlayerState<AAdventurePlayerState>() : nullptr)
 	{
+		const int32 PreviousCombo = DamagedState->CurrentCombo;
 		DamagedState->AddDamageTaken(DamageAmount);
+
+		if (PreviousCombo > 0 && DamagedState->CurrentCombo == 0)
+		{
+			UE_LOG(LogTemp, Log, TEXT("%s NPC combo broken! (%d reset to 0)"),
+				*DamagedState->GetPlayerName(),
+				PreviousCombo);
+		}
 	}
 
-	if (CurrentStreak > 0)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Combo broken! (%d reset to 0)"), CurrentStreak);
-		CurrentStreak = 0;
-		SyncGameState(EAdventureMatchResult::InProgress);
-	}
+	SyncGameState(EAdventureMatchResult::InProgress);
 }
 
 void AAdventureGameMode::NotifyPlayerDeath()
@@ -99,7 +107,7 @@ void AAdventureGameMode::NotifyPlayerDeathForController(AController* DeadControl
 	{
 		if (AAdventurePlayerState* KillerState = KillerController->GetPlayerState<AAdventurePlayerState>())
 		{
-			KillerState->AddKill();
+			KillerState->AddPlayerKill();
 			const FString DeadPlayerName = DeadController && DeadController->PlayerState ? DeadController->PlayerState->GetPlayerName() : TEXT("Player");
 
 			UE_LOG(LogTemp, Log, TEXT("PvP Elimination: %s defeated %s"),
@@ -120,12 +128,15 @@ void AAdventureGameMode::NotifyPlayerDeathForController(AController* DeadControl
 	SyncGameState(EAdventureMatchResult::InProgress);
 }
 
-void AAdventureGameMode::TriggerVictory()
+void AAdventureGameMode::TriggerVictory(AAdventurePlayerState* WinnerState)
 {
 	bGameEnded = true;
-	SyncGameState(EAdventureMatchResult::Victory);
+	const FString WinnerPlayerName = WinnerState ? WinnerState->GetPlayerName() : FString();
+	SyncGameState(EAdventureMatchResult::Victory, WinnerPlayerName);
 
-	UE_LOG(LogTemp, Warning, TEXT("VICTORY! Team reached %d kills."), KillTarget);
+	UE_LOG(LogTemp, Warning, TEXT("VICTORY! %s reached %d NPC kills."),
+		WinnerPlayerName.IsEmpty() ? TEXT("A player") : *WinnerPlayerName,
+		KillTarget);
 
 	StopAllSpawners();
 }
@@ -140,11 +151,11 @@ void AAdventureGameMode::TriggerDefeat()
 	StopAllSpawners();
 }
 
-void AAdventureGameMode::SyncGameState(EAdventureMatchResult MatchResult)
+void AAdventureGameMode::SyncGameState(EAdventureMatchResult MatchResult, const FString& WinnerPlayerName)
 {
 	if (AAdventureGameState* AdventureGameState = GetGameState<AAdventureGameState>())
 	{
-		AdventureGameState->SetMatchState(KillTarget, CurrentStreak, TeamKills, bGameEnded, MatchResult);
+		AdventureGameState->SetMatchState(KillTarget, bGameEnded, MatchResult, WinnerPlayerName);
 	}
 	else
 	{

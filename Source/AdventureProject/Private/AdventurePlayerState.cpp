@@ -8,9 +8,15 @@ AAdventurePlayerState::AAdventurePlayerState()
 	bReplicates = true;
 }
 
-void AAdventurePlayerState::AddKill()
+void AAdventurePlayerState::AddPlayerKill()
 {
-	++Kills;
+	++PlayerKills;
+	ShowStatsDebug();
+}
+
+void AAdventurePlayerState::AddNpcKill()
+{
+	++NpcKills;
 	++CurrentCombo;
 	BestCombo = FMath::Max(BestCombo, CurrentCombo);
 	ShowStatsDebug();
@@ -44,7 +50,8 @@ void AAdventurePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AAdventurePlayerState, Kills);
+	DOREPLIFETIME(AAdventurePlayerState, PlayerKills);
+	DOREPLIFETIME(AAdventurePlayerState, NpcKills);
 	DOREPLIFETIME(AAdventurePlayerState, Deaths);
 	DOREPLIFETIME(AAdventurePlayerState, DamageTaken);
 	DOREPLIFETIME(AAdventurePlayerState, CurrentCombo);
@@ -59,9 +66,10 @@ void AAdventurePlayerState::OnRep_MatchStats()
 void AAdventurePlayerState::ShowStatsDebug() const
 {
 	const FString Message = FString::Printf(
-		TEXT("%s | K:%d D:%d Damage:%.0f Combo:%d Best:%d"),
+		TEXT("%s | PvP:%d NPC:%d D:%d Damage:%.0f NPCCombo:%d Best:%d"),
 		*GetPlayerName(),
-		Kills,
+		PlayerKills,
+		NpcKills,
 		Deaths,
 		DamageTaken,
 		CurrentCombo,

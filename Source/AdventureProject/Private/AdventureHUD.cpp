@@ -138,16 +138,18 @@ void AAdventureHUD::DrawStatusPanel(const AAdventureCharacter* Character, const 
 
 	if (AdventureGameState != nullptr)
 	{
+		const int32 LocalNpcKills = AdventurePlayerState != nullptr ? AdventurePlayerState->NpcKills : 0;
+		const int32 LocalNpcCombo = AdventurePlayerState != nullptr ? AdventurePlayerState->CurrentCombo : 0;
 		const float ObjectivePercent = AdventureGameState->KillTarget > 0
-			? FMath::Clamp(static_cast<float>(AdventureGameState->TeamKills) / static_cast<float>(AdventureGameState->KillTarget), 0.0f, 1.0f)
+			? FMath::Clamp(static_cast<float>(LocalNpcKills) / static_cast<float>(AdventureGameState->KillTarget), 0.0f, 1.0f)
 			: 0.0f;
 
 		DrawBar(X + 18.0f, CursorY + 4.0f, 230.0f, 16.0f, ObjectivePercent, FLinearColor(0.15f, 0.65f, 1.0f, 0.95f),
-			FString::Printf(TEXT("Objective %d / %d"), AdventureGameState->TeamKills, AdventureGameState->KillTarget));
+			FString::Printf(TEXT("NPC Objective %d / %d"), LocalNpcKills, AdventureGameState->KillTarget));
 		CursorY += 31.0f;
 
 		DrawLineText(
-			FString::Printf(TEXT("Team Combo: %d"), AdventureGameState->CurrentStreak),
+			FString::Printf(TEXT("NPC Combo: %d"), LocalNpcCombo),
 			FLinearColor(0.75f, 0.95f, 1.0f, 1.0f),
 			X + 18.0f,
 			CursorY);
@@ -157,8 +159,9 @@ void AAdventureHUD::DrawStatusPanel(const AAdventureCharacter* Character, const 
 	{
 		DrawLineText(
 			FString::Printf(
-				TEXT("You: K %d  D %d  Damage %.0f  Best Combo %d"),
-				AdventurePlayerState->Kills,
+				TEXT("You: PvP K %d  NPC K %d  D %d  Damage %.0f  Best NPC Combo %d"),
+				AdventurePlayerState->PlayerKills,
+				AdventurePlayerState->NpcKills,
 				AdventurePlayerState->Deaths,
 				AdventurePlayerState->DamageTaken,
 				AdventurePlayerState->BestCombo),
@@ -207,7 +210,9 @@ void AAdventureHUD::DrawResultBanner(const AAdventureGameState* AdventureGameSta
 	switch (AdventureGameState->MatchResult)
 	{
 	case EAdventureMatchResult::Victory:
-		ResultText = FString::Printf(TEXT("VICTORY - %d enemy kills reached"), AdventureGameState->KillTarget);
+		ResultText = AdventureGameState->WinnerPlayerName.IsEmpty()
+			? FString::Printf(TEXT("VICTORY - %d NPC kills reached"), AdventureGameState->KillTarget)
+			: FString::Printf(TEXT("VICTORY - %s reached %d NPC kills"), *AdventureGameState->WinnerPlayerName, AdventureGameState->KillTarget);
 		ResultColor = FLinearColor(0.25f, 1.0f, 0.35f, 1.0f);
 		break;
 	case EAdventureMatchResult::Defeat:

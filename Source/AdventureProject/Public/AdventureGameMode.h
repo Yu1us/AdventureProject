@@ -7,8 +7,10 @@
 #include "GameFramework/GameModeBase.h"
 #include "AdventureGameMode.generated.h"
 
+class AAdventurePlayerState;
+
 /**
- * Core game rules: scoring (combo streak) and win/lose conditions.
+ * Core game rules: PvPvE scoring and win/lose conditions.
  */
 UCLASS()
 class ADVENTUREPROJECT_API AAdventureGameMode : public AGameModeBase
@@ -18,17 +20,9 @@ class ADVENTUREPROJECT_API AAdventureGameMode : public AGameModeBase
 public:
 	AAdventureGameMode();
 
-	// Target combo kills to win (configurable in editor)
+	// Target NPC kills for one player to win (configurable in editor)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game")
 	int32 KillTarget = 10;
-
-	// Current combo kill streak (resets on player hit)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game")
-	int32 CurrentStreak = 0;
-
-	// Total team kills across all connected players
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game")
-	int32 TeamKills = 0;
 
 	// Whether the game has ended (win or lose)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game")
@@ -38,21 +32,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game")
 	float RespawnDelay = 3.0f;
 
-	// Called by enemies on death: increment combo
+	// Called by enemies on death: increment the killer's personal NPC score and combo
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void RegisterEnemyKill();
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void RegisterEnemyKillForController(AController* KillerController);
 
-	// Called when player takes damage: reset combo
+	// Called when player takes damage: reset that player's personal NPC combo
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void NotifyPlayerHit();
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void NotifyPlayerDamaged(AController* DamagedController, float DamageAmount);
 
-	// Called when player dies: trigger defeat
+	// Called when player dies: count the death and optional PvP kill credit
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void NotifyPlayerDeath();
 
@@ -63,8 +57,8 @@ protected:
 	virtual void StartPlay() override;
 
 private:
-	void SyncGameState(EAdventureMatchResult MatchResult);
-	void TriggerVictory();
+	void SyncGameState(EAdventureMatchResult MatchResult, const FString& WinnerPlayerName = FString());
+	void TriggerVictory(AAdventurePlayerState* WinnerState);
 	void TriggerDefeat();
 	void StopAllSpawners();
 	void RespawnPlayer(AController* ControllerToRespawn);

@@ -10,13 +10,12 @@ AAdventureGameState::AAdventureGameState()
 	bReplicates = true;
 }
 
-void AAdventureGameState::SetMatchState(int32 InKillTarget, int32 InCurrentStreak, int32 InTeamKills, bool bInGameEnded, EAdventureMatchResult InMatchResult)
+void AAdventureGameState::SetMatchState(int32 InKillTarget, bool bInGameEnded, EAdventureMatchResult InMatchResult, const FString& InWinnerPlayerName)
 {
 	KillTarget = InKillTarget;
-	CurrentStreak = InCurrentStreak;
-	TeamKills = InTeamKills;
 	bGameEnded = bInGameEnded;
 	MatchResult = InMatchResult;
+	WinnerPlayerName = InWinnerPlayerName;
 }
 
 void AAdventureGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -24,29 +23,19 @@ void AAdventureGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AAdventureGameState, KillTarget);
-	DOREPLIFETIME(AAdventureGameState, CurrentStreak);
-	DOREPLIFETIME(AAdventureGameState, TeamKills);
 	DOREPLIFETIME(AAdventureGameState, bGameEnded);
 	DOREPLIFETIME(AAdventureGameState, MatchResult);
+	DOREPLIFETIME(AAdventureGameState, WinnerPlayerName);
 }
 
 void AAdventureGameState::OnRep_KillTarget()
 {
-	ShowComboDebug();
-}
-
-void AAdventureGameState::OnRep_CurrentStreak()
-{
-	ShowComboDebug();
-}
-
-void AAdventureGameState::OnRep_TeamKills()
-{
-	ShowComboDebug();
+	ShowObjectiveDebug();
 }
 
 void AAdventureGameState::OnRep_GameEnded()
 {
+	ShowResultDebug();
 }
 
 void AAdventureGameState::OnRep_MatchResult()
@@ -54,9 +43,14 @@ void AAdventureGameState::OnRep_MatchResult()
 	ShowResultDebug();
 }
 
-void AAdventureGameState::ShowComboDebug() const
+void AAdventureGameState::OnRep_WinnerPlayerName()
 {
-	const FString Message = FString::Printf(TEXT("Team Kills: %d / %d | Team Combo: %d"), TeamKills, KillTarget, CurrentStreak);
+	ShowResultDebug();
+}
+
+void AAdventureGameState::ShowObjectiveDebug() const
+{
+	const FString Message = FString::Printf(TEXT("Personal NPC kill target: %d"), KillTarget);
 	UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
 }
 
@@ -72,7 +66,9 @@ void AAdventureGameState::ShowResultDebug() const
 	switch (MatchResult)
 	{
 	case EAdventureMatchResult::Victory:
-		Message = FString::Printf(TEXT("=== VICTORY! Team reached %d kills! ==="), KillTarget);
+		Message = WinnerPlayerName.IsEmpty()
+			? FString::Printf(TEXT("=== VICTORY! A player reached %d NPC kills! ==="), KillTarget)
+			: FString::Printf(TEXT("=== VICTORY! %s reached %d NPC kills! ==="), *WinnerPlayerName, KillTarget);
 		break;
 	case EAdventureMatchResult::Defeat:
 		Message = TEXT("=== DEFEAT! Player died. ===");
@@ -93,11 +89,13 @@ void AAdventureGameState::ShowScoreboardDebug() const
 		if (const AAdventurePlayerState* AdventurePlayerState = Cast<AAdventurePlayerState>(PlayerState))
 		{
 			const FString Message = FString::Printf(
-				TEXT("%s | K:%d D:%d Damage:%.0f BestCombo:%d"),
+				TEXT("%s | PvP:%d NPC:%d D:%d Damage:%.0f NPCCombo:%d BestNPCCombo:%d"),
 				*AdventurePlayerState->GetPlayerName(),
-				AdventurePlayerState->Kills,
+				AdventurePlayerState->PlayerKills,
+				AdventurePlayerState->NpcKills,
 				AdventurePlayerState->Deaths,
 				AdventurePlayerState->DamageTaken,
+				AdventurePlayerState->CurrentCombo,
 				AdventurePlayerState->BestCombo);
 
 			UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
