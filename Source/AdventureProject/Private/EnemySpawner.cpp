@@ -17,7 +17,7 @@ void AEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (bAutoStart)
+	if (HasAuthority() && bAutoStart)
 	{
 		StartSpawning();
 	}
@@ -25,12 +25,17 @@ void AEnemySpawner::BeginPlay()
 
 void AEnemySpawner::StartSpawning()
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
+
 	GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &AEnemySpawner::SpawnEnemy, SpawnInterval, true, 0.0f);
 }
 
 void AEnemySpawner::SpawnEnemy()
 {
-	if (!EnemyClass)
+	if (!HasAuthority() || !EnemyClass)
 	{
 		return;
 	}
