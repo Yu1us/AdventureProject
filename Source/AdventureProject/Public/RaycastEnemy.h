@@ -54,7 +54,7 @@ protected:
 private:
 	ERaycastState CurrentState = ERaycastState::Aiming;
 
-	// Locked aim point at the moment of fire
+	// Locked aim point committed when charging begins
 	FVector FireTargetLocation = FVector::ZeroVector;
 
 	// Timer accumulator for charging / cooldown

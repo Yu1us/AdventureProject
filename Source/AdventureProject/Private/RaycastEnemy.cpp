@@ -80,6 +80,7 @@ void ARaycastEnemy::TickAiming(float DeltaTime)
 	// If trace reaches the player (or nothing blocks), begin charging
 	if (!bHit || Hit.GetActor() == Player)
 	{
+		FireTargetLocation = PlayerLocation;
 		CurrentState = ERaycastState::Charging;
 		StateTimer = ChargeTime;
 	}
@@ -95,27 +96,26 @@ void ARaycastEnemy::TickCharging(float DeltaTime)
 	}
 
 	const FVector MyLocation = GetActorLocation();
-	const FVector PlayerLocation = Player->GetActorLocation();
-	const FVector ToPlayer = PlayerLocation - MyLocation;
+	const FVector ToTarget = FireTargetLocation - MyLocation;
 
-	// Keep facing the player during charge
-	FVector FlatToPlayer = ToPlayer;
-	FlatToPlayer.Z = 0.0f;
-	if (!FlatToPlayer.IsNearlyZero())
+	// Keep facing the committed attack direction during charge.
+	FVector FlatToTarget = ToTarget;
+	FlatToTarget.Z = 0.0f;
+	if (!FlatToTarget.IsNearlyZero())
 	{
-		SetActorRotation(FMath::RInterpTo(GetActorRotation(), FlatToPlayer.Rotation(), DeltaTime, 10.0f));
+		SetActorRotation(FMath::RInterpTo(GetActorRotation(), FlatToTarget.Rotation(), DeltaTime, 10.0f));
 	}
 
 	// Attack telegraph while the raycast shot charges.
 	const FVector Start = MyLocation + FVector(0.0f, 0.0f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-	DrawDebugLine(GetWorld(), Start, PlayerLocation, FColor::Red, false, -1.0f, 0, 3.0f);
+	const FVector Direction = (FireTargetLocation - Start).GetSafeNormal();
+	const FVector End = Start + Direction * RayRange;
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, -1.0f, 0, 3.0f);
 
 	// Countdown
 	StateTimer -= DeltaTime;
 	if (StateTimer <= 0.0f)
 	{
-		// Lock the player's position at the moment of firing
-		FireTargetLocation = PlayerLocation;
 		CurrentState = ERaycastState::Firing;
 	}
 }
