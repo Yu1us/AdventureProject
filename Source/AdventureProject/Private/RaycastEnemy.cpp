@@ -7,6 +7,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
+namespace
+{
+constexpr float DebugRefreshLifetime = 0.1f;
+constexpr float FireDebugLifetime = 0.5f;
+}
+
 ARaycastEnemy::ARaycastEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -110,7 +116,8 @@ void ARaycastEnemy::TickCharging(float DeltaTime)
 	const FVector Start = MyLocation + FVector(0.0f, 0.0f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 	const FVector Direction = (FireTargetLocation - Start).GetSafeNormal();
 	const FVector End = Start + Direction * RayRange;
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, -1.0f, 0, 3.0f);
+	const float Lifetime = FMath::Max(DebugRefreshLifetime, DeltaTime * 2.0f);
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, Lifetime, 0, 3.0f);
 
 	// Countdown
 	StateTimer -= DeltaTime;
@@ -133,7 +140,7 @@ void ARaycastEnemy::TickFiring(float DeltaTime)
 
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
 
-	DrawDebugLine(GetWorld(), Start, bHit ? Hit.ImpactPoint : End, FColor::Yellow, false, 0.5f, 0, 2.0f);
+	DrawDebugLine(GetWorld(), Start, bHit ? Hit.ImpactPoint : End, FColor::Yellow, false, FireDebugLifetime, 0, 2.0f);
 
 	if (bHit)
 	{

@@ -5,6 +5,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 
+namespace
+{
+constexpr float DebugRefreshLifetime = 0.1f;
+}
+
 ADashEnemy::ADashEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -79,8 +84,9 @@ void ADashEnemy::TickWindUp(float DeltaTime)
 	// Attack telegraph for the dash path.
 	const FVector Start = GetActorLocation();
 	const FVector End = Start + DashDirection * DashRange;
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, -1.0f, 0, 3.0f);
-	DrawDebugSphere(GetWorld(), Start + FVector(0, 0, 50), 30.0f, 8, FColor::Red, false, -1.0f);
+	const float Lifetime = FMath::Max(DebugRefreshLifetime, DeltaTime * 2.0f);
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, Lifetime, 0, 3.0f);
+	DrawDebugSphere(GetWorld(), Start + FVector(0, 0, 50), 30.0f, 8, FColor::Red, false, Lifetime);
 
 	StateTimer -= DeltaTime;
 	if (StateTimer <= 0.0f)
@@ -145,7 +151,8 @@ void ADashEnemy::TickDashing(float DeltaTime)
 void ADashEnemy::TickRecover(float DeltaTime)
 {
 	// Stunned - just wait
-	DrawDebugSphere(GetWorld(), GetActorLocation() + FVector(0, 0, 80), 20.0f, 8, FColor::Yellow, false, -1.0f);
+	const float Lifetime = FMath::Max(DebugRefreshLifetime, DeltaTime * 2.0f);
+	DrawDebugSphere(GetWorld(), GetActorLocation() + FVector(0, 0, 80), 20.0f, 8, FColor::Yellow, false, Lifetime);
 
 	StateTimer -= DeltaTime;
 	if (StateTimer <= 0.0f)
